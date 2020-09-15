@@ -17,6 +17,7 @@ multicodec.add(dagPB)
 
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const decode = (v) => multicodec.decode(v, 'dag-pb')
+const { prepare } = dagPB(multiformats)
 
 function linkCidsToStrings (links) {
   return links.map((l) => {
@@ -29,35 +30,35 @@ function linkCidsToStrings (links) {
 }
 
 describe('dag-pb', () => {
-  it('should encode an empty node', () => {
-    const result = encode({})
+  it('should prepare & encode an empty node', () => {
+    const result = encode(prepare({}))
     expect(result).to.be.an.instanceof(Uint8Array)
     expect(result).to.be.empty()
   })
 
-  it('should encode a node with data', () => {
+  it('should prepare & encode a node with data', () => {
     const data = Uint8Array.from([0, 1, 2, 3])
-    const result = encode({ Data: data })
+    const result = encode(prepare({ Data: data }))
     expect(result).to.be.an.instanceof(Uint8Array)
 
     const node = decode(result)
     expect(node.Data).to.deep.equal(data)
   })
 
-  it('should encode a node with Uint8Array data', () => {
+  it('should prepare & encode a node with Uint8Array data', () => {
     const data = Uint8Array.from([0, 1, 2, 3])
-    const result = encode({ Data: data })
+    const result = encode(prepare({ Data: data }))
     expect(result).to.be.an.instanceof(Uint8Array)
 
     const node = decode(result)
     expect(node.Data).to.deep.equal(Uint8Array.from([0, 1, 2, 3]))
   })
 
-  it('should encode a node with links', () => {
+  it('should prepare & encode a node with links', () => {
     const links = [
       { Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
     ]
-    const result = encode({ Links: links })
+    const result = encode(prepare({ Links: links }))
     expect(result).to.be.an.instanceof(Uint8Array)
 
     const node = decode(result)
@@ -68,46 +69,46 @@ describe('dag-pb', () => {
     }]))
   })
 
-  it('should encode a node with links as plain objects', () => {
+  it('should prepare & encode a node with links as plain objects', () => {
     const links = [{
       Name: '',
       Tsize: 0,
       Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]
-    const result = encode({ Links: links })
+    const result = encode(prepare({ Links: links }))
     expect(result).to.be.an.instanceof(Uint8Array)
 
     const node = decode(result)
     expect(linkCidsToStrings(node.Links)).to.containSubset(linkCidsToStrings(links))
   })
 
-  it('should ignore invalid properties when serializing', () => {
-    const result = encode({ foo: 'bar' })
+  it('should ignore invalid properties when preparing', () => {
+    const result = encode(prepare({ foo: 'bar' }))
     expect(result).to.be.empty()
   })
 
-  it('create a node', () => {
+  it('prepare & create a node', () => {
     const data = new TextEncoder().encode('some data')
-    const serialized = encode({ Data: data })
+    const serialized = encode(prepare({ Data: data }))
     const deserialized = decode(serialized)
     expect(data).to.eql(deserialized.Data)
   })
 
-  it('create a node with string data', () => {
+  it('prepare & create a node with string data', () => {
     const data = 'some data'
-    const serialized = encode({ Data: data })
+    const serialized = encode(prepare({ Data: data }))
     const deserialized = decode(serialized)
     expect(new TextEncoder().encode('some data')).to.eql(deserialized.Data)
   })
 
-  it('create a node with bare string', () => {
+  it('prepare & create a node with bare string', () => {
     const data = 'some data'
-    const serialized = encode(data)
+    const serialized = encode(prepare(data))
     const deserialized = decode(serialized)
     expect(new TextEncoder().encode('some data')).to.eql(deserialized.Data)
   })
 
-  it('create a node with links', () => {
+  it('prepare & create a node with links', () => {
     const origLinks = [{
       Name: 'some other link',
       Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39V'),
@@ -127,7 +128,7 @@ describe('dag-pb', () => {
       })
     }
 
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
 
     // check sorting
     expect(reconstituted.Links.map((l) => l.Name)).to.be.eql([
@@ -136,7 +137,7 @@ describe('dag-pb', () => {
     ])
   })
 
-  it('create a node with stable sorted links', () => {
+  it('prepare & create a node with stable sorted links', () => {
     const links = [{
       Name: '',
       Hash: CID.from('QmUGhP2X8xo9dsj45vqx1H6i5WqPqLqmLQsHTTxd3ke8mp'),
@@ -184,27 +185,27 @@ describe('dag-pb', () => {
     }]
 
     const node = { Name: new TextEncoder().encode('some data'), Links: links }
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
 
     // check sorting
     expect(reconstituted.Links.map((l) => l.Hash)).to.be.eql(links.map(l => l.Hash))
   })
 
-  it('create with empty link name', () => {
+  it('prepare & create with empty link name', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
         CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
       ]
     }
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
     expect(reconstituted.Links[0].Name).to.be.eql('')
     // fix it up locally for deep comparison
     node.Links[0] = { Name: '', Tsize: 0, Hash: node.Links[0] }
     expect(node).to.deep.equal(reconstituted)
   })
 
-  it('create with undefined link name', () => {
+  it('prepare & create with undefined link name', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
@@ -212,31 +213,31 @@ describe('dag-pb', () => {
       ]
     }
 
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
     expect(reconstituted.Links[0].Name).to.be.eql('')
     node.Links[0].Name = '' // fix it up locally for deep comparison
     expect(node).to.deep.equal(reconstituted)
   })
 
-  it('create a node with bytes only', () => {
+  it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
     expect({ Data: new TextEncoder().encode('hello'), Links: [] }).to.deep.equal(reconstituted)
   })
 
-  it('create an empty node', () => {
+  it('prepare & create an empty node', () => {
     // this node is not in the repo as we don't copy node data to the browser
     const node = new Uint8Array(0)
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
     expect({ Data: new Uint8Array(0), Links: [] }).to.deep.equal(reconstituted)
   })
 
-  it('create an empty node from object', () => {
-    const reconstituted = decode(encode({}))
+  it('prepare & create an empty node from object', () => {
+    const reconstituted = decode(encode(prepare({})))
     expect({ Data: new Uint8Array(0), Links: [] }).to.deep.equal(reconstituted)
   })
 
-  it('fail to create a node with other data types', () => {
+  it('fail to prepare & create a node with other data types', () => {
     const invalids = [
       [],
       true,
@@ -246,7 +247,7 @@ describe('dag-pb', () => {
     ]
 
     for (const invalid of invalids) {
-      expect(() => encode(invalid)).to.throw('Invalid DAG-PB form')
+      expect(() => encode(prepare(invalid))).to.throw('Invalid DAG-PB form')
     }
   })
 
@@ -349,11 +350,11 @@ describe('dag-pb', () => {
     }
 
     const node = { Data: new TextEncoder().encode('hiya'), Links: [l1, l2] }
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
     expect(reconstituted.Links).to.have.lengthOf(2)
   })
 
-  it('create with multihash bytes', () => {
+  it('prepare & create with multihash bytes', () => {
     const linkHash = bytes.fromHex('12208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f43')
     const link = {
       Name: 'hello',
@@ -362,7 +363,7 @@ describe('dag-pb', () => {
     }
 
     const node = { Name: new TextEncoder().encode('some data'), Links: [link] }
-    const reconstituted = decode(encode(node))
+    const reconstituted = decode(encode(prepare(node)))
 
     expect(reconstituted.Links[0].Hash.toString()).to.equal('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
   })
@@ -373,7 +374,7 @@ describe('dag-pb', () => {
         Name: new TextEncoder().encode('some data'),
         Links: [{ Name: 'hello', Tsize: 3 }]
       }
-      encode(node)
+      encode(prepare(node))
     }).to.throw('Invalid DAG-PB form')
   })
 })
