@@ -8,9 +8,11 @@ function decodeLink (bytes) {
     const preIndex = index
     let wire = 0
     for (let shift = 0; ; shift += 7) {
+      /* c8 ignore next 3 */
       if (shift >= 64) { // maybe <53?
         throw new Error('proto: PBLink: overflow')
       }
+      /* c8 ignore next 3 */
       if (index >= l) {
         throw new Error('proto: PBLink: unexpected end of data')
       }
@@ -23,9 +25,11 @@ function decodeLink (bytes) {
     }
     const fieldNum = wire >> 3
     const wireType = wire & 0x7
+    /* c8 ignore next 3 */
     if (wireType === 4) {
       throw new Error('proto: PBLink: wiretype end group for non-group')
     }
+    /* c8 ignore next 3 */
     if (fieldNum <= 0) {
       throw new Error(`proto: PBLink: illegal tag ${fieldNum} (wire type ${wire})`)
     }
@@ -38,13 +42,16 @@ function decodeLink (bytes) {
 
     switch (fieldNum) {
       case 1:
+        /* c8 ignore next 3 */
         if (wireType !== 2) {
           throw new Error(`proto: PBLink: wrong wireType = ${wireType} for field Hash`)
         }
         for (let shift = 0; ; shift += 7) {
+          /* c8 ignore next 3 */
           if (shift >= 64) { // maybe <53?
             throw new Error('proto: PBLink: overflow')
           }
+          /* c8 ignore next 3 */
           if (index >= l) {
             throw new Error('proto: PBLink: unexpected end of data')
           }
@@ -55,13 +62,16 @@ function decodeLink (bytes) {
             break
           }
         }
+        /* c8 ignore next 3 */
         if (byteLen < 0) {
           throw new Error('proto: PBLink: invalid length')
         }
         postIndex = index + byteLen
+        /* c8 ignore next 3 */
         if (postIndex < 0) {
           throw new Error('proto: PBLink: invalid length')
         }
+        /* c8 ignore next 3 */
         if (postIndex > l) {
           throw new Error('proto: PBLink: unexpected end of data')
         }
@@ -69,13 +79,16 @@ function decodeLink (bytes) {
         index = postIndex
         break
       case 2:
+        /* c8 ignore next 3 */
         if (wireType !== 2) {
           throw new Error(`proto: wrong wireType = ${wireType} for field Name`)
         }
         for (let shift = 0; ; shift += 7) {
+          /* c8 ignore next 3 */
           if (shift >= 64) { // maybe <53?
             throw new Error('proto: PBLink: overflow')
           }
+          /* c8 ignore next 3 */
           if (index >= l) {
             throw new Error('proto: PBLink: unexpected end of data')
           }
@@ -86,13 +99,16 @@ function decodeLink (bytes) {
             break
           }
         }
+        /* c8 ignore next 3 */
         if (stringLen < 0) {
           throw new Error('proto: PBLink: invalid length')
         }
         postIndex = index + stringLen
+        /* c8 ignore next 3 */
         if (postIndex < 0) {
           throw new Error('proto: PBLink: invalid length')
         }
+        /* c8 ignore next 3 */
         if (postIndex > l) {
           throw new Error('proto: PBLink: unexpected end of data')
         }
@@ -100,13 +116,16 @@ function decodeLink (bytes) {
         index = postIndex
         break
       case 3:
+        /* c8 ignore next 3 */
         if (wireType !== 0) {
           throw new Error(`proto: wrong wireType = ${wireType} for field Tsize`)
         }
         for (let shift = 0; ; shift += 7) {
+          /* c8 ignore next 3 */
           if (shift >= 64) { // maybe <53?
             throw new Error('proto: PBLink: overflow')
           }
+          /* c8 ignore next 3 */
           if (index >= l) {
             throw new Error('proto: PBLink: unexpected end of data')
           }
@@ -119,14 +138,15 @@ function decodeLink (bytes) {
         }
         link.Tsize = v
         break
+      /* c8 ignore next 15 */
       default:
         index = preIndex
         skippy = skip(bytes.slice(index))
         if (skippy < 0) {
-          throw new Error('proto: invalid length')
+          throw new Error('proto: PBLink: invalid length')
         }
         if (index + skippy < 0) {
-          throw new Error('proto: invalid length')
+          throw new Error('proto: PBLink: invalid length')
         }
         if (index + skippy > l) {
           throw new Error('proto: PBLink: unexpected end of data')
@@ -137,6 +157,7 @@ function decodeLink (bytes) {
     }
   }
 
+  /* c8 ignore next 3 */
   if (index > l) {
     throw new Error('proto: PBLink: unexpected end of data')
   }
@@ -153,9 +174,11 @@ function decodeNode (bytes) {
     const preIndex = index
     let wire = 0
     for (let shift = 0; ; shift += 7) {
+      /* c8 ignore next 3 */
       if (shift >= 64) { // maybe <53?
         throw new Error('proto: PBNode: overflow')
       }
+      /* c8 ignore next 3 */
       if (index >= l) {
         throw new Error('proto: PBNode: unexpected end of data')
       }
@@ -168,9 +191,11 @@ function decodeNode (bytes) {
     }
     const fieldNum = wire >> 3
     const wireType = wire & 0x7
+    /* c8 ignore next 3 */
     if (wireType === 4) {
       throw new Error('proto: PBNode: wiretype end group for non-group')
     }
+    /* c8 ignore next 3 */
     if (fieldNum <= 0) {
       throw new Error(`proto: PBNode: illegal tag ${fieldNum} (wire type ${wire})`)
     }
@@ -182,13 +207,16 @@ function decodeNode (bytes) {
 
     switch (fieldNum) {
       case 1:
+        /* c8 ignore next 3 */
         if (wireType !== 2) {
           throw Error(`proto: wrong wireType = ${wireType} for field Data`)
         }
         for (let shift = 0; ; shift += 7) {
+          /* c8 ignore next 3 */
           if (shift >= 64) { // maybe <53?
             throw new Error('proto: PBNode: overflow')
           }
+          /* c8 ignore next 3 */
           if (index >= l) {
             throw new Error('proto: PBNode: unexpected end of data')
           }
@@ -199,13 +227,16 @@ function decodeNode (bytes) {
             break
           }
         }
+        /* c8 ignore next 3 */
         if (byteLen < 0) {
           throw new Error('proto: PBNode: invalid length')
         }
         postIndex = index + byteLen
+        /* c8 ignore next 3 */
         if (postIndex < 0) {
           throw new Error('proto: PBNode: invalid length')
         }
+        /* c8 ignore next 3 */
         if (postIndex > l) {
           throw new Error('proto: PBNode: unexpected end of data')
         }
@@ -213,13 +244,16 @@ function decodeNode (bytes) {
         index = postIndex
         break
       case 2:
+        /* c8 ignore next 3 */
         if (wireType !== 2) {
           throw new Error(`proto: wrong wireType = ${wireType} for field Links`)
         }
         for (let shift = 0; ; shift += 7) {
+          /* c8 ignore next 3 */
           if (shift >= 64) { // maybe <53?
             throw new Error('proto: PBNode: overflow')
           }
+          /* c8 ignore next 3 */
           if (index >= l) {
             throw new Error('proto: PBNode: unexpected end of data')
           }
@@ -230,13 +264,16 @@ function decodeNode (bytes) {
             break
           }
         }
+        /* c8 ignore next 3 */
         if (msglen < 0) {
           throw new Error('proto: PBNode: invalid length')
         }
         postIndex = index + msglen
+        /* c8 ignore next 3 */
         if (postIndex < 0) {
           throw new Error('proto: PBNode: invalid length')
         }
+        /* c8 ignore next 3 */
         if (postIndex > l) {
           throw new Error('proto: PBNode: unexpected end of data')
         }
@@ -248,6 +285,7 @@ function decodeNode (bytes) {
         node.Links.push(decodeLink(bytes.slice(index, postIndex)))
         index = postIndex
         break
+      /* c8 ignore next 15 */
       default:
         index = preIndex
         skippy = skip(bytes.slice(index))
@@ -266,6 +304,7 @@ function decodeNode (bytes) {
     }
   }
 
+  /* c8 ignore next 3 */
   if (index > l) {
     throw new Error('proto: PBNode: unexpected end of data')
   }
@@ -282,6 +321,9 @@ function decodeNode (bytes) {
   return node
 }
 
+// Go supports unknown fields that need to be skipped, is this supported in
+// any way in IPFS data??
+/* c8 ignore next 85 */
 function skip (bytes) {
   const l = bytes.length
   let index = 0

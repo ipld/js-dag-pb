@@ -61,9 +61,6 @@ function encodeVarintMerkledag (bytes, offset, v) {
 }
 
 function sizeLink (link) {
-  if (!link) {
-    return 0
-  }
   let n = 0
   if (link.Hash) {
     const l = link.Hash.length
@@ -80,9 +77,6 @@ function sizeLink (link) {
 }
 
 function sizeNode (node) {
-  if (!node) {
-    return 0
-  }
   let n = 0
   if (node.Data) {
     const l = node.Data.length
@@ -104,6 +98,7 @@ function sov (x) {
 // golang math/bits
 function len64 (x) {
   let n = 0
+  /* c8 ignore next 3 */
   if (!Number.isSafeInteger(x)) {
     throw new Error('unsafe integer')
   }
