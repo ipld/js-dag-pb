@@ -1,7 +1,5 @@
-import protons from 'protons'
-import protoDef from './dag.proto.js'
-
-const proto = protons(protoDef)
+import { decodeNode } from './pb-decode.js'
+import { encodeNode } from './pb-encode.js'
 
 const code = 0x70
 const name = 'dag-pb'
@@ -161,12 +159,12 @@ function create (multiformats) {
     if (node.Data) {
       pbn.Data = node.Data
     }
-    const serialized = proto.PBNode.encode(pbn)
+    const serialized = encodeNode(pbn)
     return bytes.coerce(serialized)
   }
 
   const decode = (bytes) => {
-    const pbn = proto.PBNode.decode(bytes)
+    const pbn = decodeNode(bytes)
 
     const node = {
       Links: pbn.Links.map((link) => {

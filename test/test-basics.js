@@ -37,7 +37,7 @@ describe('dag-pb', () => {
   })
 
   it('should prepare & encode a node with data', () => {
-    const data = Uint8Array.from([0, 1, 2, 3])
+    const data = Uint8Array.from([0, 1, 2, 3, 4])
     const result = encode(prepare({ Data: data }))
     expect(result).to.be.an.instanceof(Uint8Array)
 

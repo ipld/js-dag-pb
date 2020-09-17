@@ -21,9 +21,7 @@
     "type": "git",
     "url": "https://github.com/ipld/js-dag-pb.git"
   },
-  "dependencies": {
-    "protons": "^2.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "c8": "^7.3.0",
     "chai": "^4.2.0",
