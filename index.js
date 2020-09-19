@@ -1,5 +1,5 @@
-import { decodeNode } from './pb-decode.js'
-import { encodeNode } from './pb-encode.js'
+import decodeNode from './pb-decode.js'
+import encodeNode from './pb-encode.js'
 
 const code = 0x70
 const name = 'dag-pb'

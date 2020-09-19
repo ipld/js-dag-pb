@@ -1,30 +1,34 @@
+// port and refactor of codegen'd Go version @
+// https://github.com/ipfs/go-merkledag/blob/master/pb/merkledag.pb.go
+
 const textEncoder = new TextEncoder()
 
+// the encoders work backward from the end of the bytes array
+// encodeLink() is passed a slice of the parent byte array that ends where this
+// link needs to end, so it packs to the right-most part of the passed `bytes`
 function encodeLink (link, bytes) {
   let i = bytes.length
   if (typeof link.Tsize === 'number') {
-    i = encodeVarintMerkledag(bytes, i, link.Tsize)
-    i--
+    i = encodeVarint(bytes, i, link.Tsize) - 1
     bytes[i] = 0x18
   }
   if (typeof link.Name === 'string') {
     const nameBytes = textEncoder.encode(link.Name)
     i -= nameBytes.length
     bytes.set(nameBytes, i)
-    i = encodeVarintMerkledag(bytes, i, nameBytes.length)
-    i--
+    i = encodeVarint(bytes, i, nameBytes.length) - 1
     bytes[i] = 0x12
   }
   if (link.Hash) {
     i -= link.Hash.length
     bytes.set(link.Hash, i)
-    i = encodeVarintMerkledag(bytes, i, link.Hash.length)
-    i--
+    i = encodeVarint(bytes, i, link.Hash.length) - 1
     bytes[i] = 0xa
   }
   return bytes.length - i
 }
 
+// encodes a PBNode into a new byte array of precisely the correct size
 function encodeNode (node) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
@@ -32,34 +36,21 @@ function encodeNode (node) {
   if (node.Data) {
     i -= node.Data.length
     bytes.set(node.Data, i)
-    i = encodeVarintMerkledag(bytes, i, node.Data.length)
-    i--
+    i = encodeVarint(bytes, i, node.Data.length) - 1
     bytes[i] = 0xa
   }
   if (node.Links) {
     for (let index = node.Links.length - 1; index >= 0; index--) {
       const size = encodeLink(node.Links[index], bytes.subarray(0, i))
       i -= size
-      i = encodeVarintMerkledag(bytes, i, size)
-      i--
+      i = encodeVarint(bytes, i, size) - 1
       bytes[i] = 0x12
     }
   }
   return bytes
 }
 
-function encodeVarintMerkledag (bytes, offset, v) {
-  offset -= sov(v)
-  const base = offset
-  while (v >= (1 << 7)) {
-    bytes[offset] = (v & 0x7f) | 0x80
-    v >>= 7
-    offset++
-  }
-  bytes[offset] = v
-  return base
-}
-
+// work out exactly how many bytes this link takes up
 function sizeLink (link) {
   let n = 0
   if (link.Hash) {
@@ -76,6 +67,7 @@ function sizeLink (link) {
   return n
 }
 
+// work out exactly how many bytes this node takes up
 function sizeNode (node) {
   let n = 0
   if (node.Data) {
@@ -91,11 +83,24 @@ function sizeNode (node) {
   return n
 }
 
+function encodeVarint (bytes, offset, v) {
+  offset -= sov(v)
+  const base = offset
+  while (v >= (1 << 7)) {
+    bytes[offset] = (v & 0x7f) | 0x80
+    v >>= 7
+    offset++
+  }
+  bytes[offset] = v
+  return base
+}
+
+// size of varint
 function sov (x) {
   return Math.floor((len64(x | 1) + 6) / 7)
 }
 
-// golang math/bits
+// golang math/bits, how many bits does it take to represent this integer?
 function len64 (x) {
   let n = 0
   /* c8 ignore next 3 */
@@ -115,22 +120,22 @@ function len64 (x) {
 
 // golang math/bits
 const len8tab = [
-  0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-  0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-  0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06,
-  0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06,
-  0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-  0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-  0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-  0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-  0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08
+  0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
 ]
 
-export { encodeNode, encodeLink }
+export default encodeNode
