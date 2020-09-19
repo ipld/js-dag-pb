@@ -1,15 +1,13 @@
 /* eslint-env mocha */
 
 import chai from 'chai'
-import dirtyChai from 'dirty-chai'
 import chaiSubset from 'chai-subset'
 import dagPB from '@ipld/dag-pb'
 import multiformats from 'multiformats/basics'
 import base58 from 'multiformats/bases/base58'
 
-chai.use(dirtyChai)
 chai.use(chaiSubset)
-const { expect } = chai
+const { assert } = chai
 
 const { CID, multicodec, multibase, bytes } = multiformats
 multibase.add(base58)
@@ -17,7 +15,7 @@ multicodec.add(dagPB)
 
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const decode = (v) => multicodec.decode(v, 'dag-pb')
-const { prepare } = dagPB(multiformats)
+const { prepare, validate } = dagPB(multiformats)
 
 function linkCidsToStrings (links) {
   return links.map((l) => {
@@ -30,85 +28,83 @@ function linkCidsToStrings (links) {
 }
 
 describe('dag-pb', () => {
-  it('should prepare & encode an empty node', () => {
-    const result = encode(prepare({}))
-    expect(result).to.be.an.instanceof(Uint8Array)
-    expect(result).to.be.empty()
+  it('prepare & encode an empty node', () => {
+    const prepared = prepare({})
+    assert.deepEqual(prepared, { Data: null, Links: null })
+    const result = encode(prepared)
+    assert.instanceOf(result, Uint8Array)
+    assert.strictEqual(result.length, 0)
   })
 
-  it('should prepare & encode a node with data', () => {
+  it('prepare & encode a node with data', () => {
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    const result = encode(prepare({ Data: data }))
-    expect(result).to.be.an.instanceof(Uint8Array)
+    const prepared = prepare({ Data: data })
+    assert.deepEqual(prepared, { Data: data, Links: null })
+    const result = encode(prepared)
+    assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
-    expect(node.Data).to.deep.equal(data)
+    assert.deepEqual(node.Data, data)
   })
 
-  it('should prepare & encode a node with Uint8Array data', () => {
-    const data = Uint8Array.from([0, 1, 2, 3])
-    const result = encode(prepare({ Data: data }))
-    expect(result).to.be.an.instanceof(Uint8Array)
-
-    const node = decode(result)
-    expect(node.Data).to.deep.equal(Uint8Array.from([0, 1, 2, 3]))
-  })
-
-  it('should prepare & encode a node with links', () => {
+  it('prepare & encode a node with links', () => {
     const links = [
       { Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
     ]
-    const result = encode(prepare({ Links: links }))
-    expect(result).to.be.an.instanceof(Uint8Array)
+    const prepared = prepare({ Links: links })
+    assert.deepEqual(prepared, { Data: null, Links: [{ Hash: links[0].Hash, Name: null, Tsize: null }] })
+    const result = encode(prepared)
+    assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
-    expect(linkCidsToStrings(node.Links)).to.containSubset(linkCidsToStrings([{
-      Name: '',
-      Tsize: 0,
+    assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings([{
+      Name: null,
+      Tsize: null,
       Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]))
   })
 
-  it('should prepare & encode a node with links as plain objects', () => {
+  it('prepare & encode a node with links as plain objects', () => {
     const links = [{
-      Name: '',
-      Tsize: 0,
+      Name: null,
+      Tsize: null,
       Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]
-    const result = encode(prepare({ Links: links }))
-    expect(result).to.be.an.instanceof(Uint8Array)
+    const prepared = prepare({ Links: links })
+    assert.deepEqual(prepared, { Data: null, Links: [{ Hash: links[0].Hash, Name: null, Tsize: null }] })
+    const result = encode(prepared)
+    assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
-    expect(linkCidsToStrings(node.Links)).to.containSubset(linkCidsToStrings(links))
+    assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings(links))
   })
 
-  it('should ignore invalid properties when preparing', () => {
-    const result = encode(prepare({ foo: 'bar' }))
-    expect(result).to.be.empty()
-  })
-
-  it('prepare & create a node', () => {
-    const data = new TextEncoder().encode('some data')
-    const serialized = encode(prepare({ Data: data }))
-    const deserialized = decode(serialized)
-    expect(data).to.eql(deserialized.Data)
+  it('ignore invalid properties when preparing', () => {
+    const prepared = prepare({ foo: 'bar' })
+    assert.deepEqual(prepared, { Data: null, Links: null })
+    const result = encode(prepared)
+    assert.strictEqual(result.length, 0)
   })
 
   it('prepare & create a node with string data', () => {
     const data = 'some data'
-    const serialized = encode(prepare({ Data: data }))
+    const prepared = prepare({ Data: data })
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: null })
+    const serialized = encode(prepared)
     const deserialized = decode(serialized)
-    expect(new TextEncoder().encode('some data')).to.eql(deserialized.Data)
+    assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
   it('prepare & create a node with bare string', () => {
     const data = 'some data'
-    const serialized = encode(prepare(data))
+    const prepared = prepare(data)
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: null })
+    const serialized = encode(prepared)
     const deserialized = decode(serialized)
-    expect(new TextEncoder().encode('some data')).to.eql(deserialized.Data)
+    assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
-  it('prepare & create a node with links', () => {
+  it('prepare & create a node with links (& sorting)', () => {
     const origLinks = [{
       Name: 'some other link',
       Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39V'),
@@ -116,7 +112,7 @@ describe('dag-pb', () => {
     }, {
       Name: 'some link',
       Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'),
-      Tsize: 10
+      Tsize: 100000000
     }]
 
     const someData = new TextEncoder().encode('some data')
@@ -128,10 +124,15 @@ describe('dag-pb', () => {
       })
     }
 
-    const reconstituted = decode(encode(prepare(node)))
+    const prepared = prepare(node)
+    assert.deepEqual(prepared.Links.map((l) => l.Name), [
+      'some link',
+      'some other link'
+    ])
+    const reconstituted = decode(encode(prepared))
 
     // check sorting
-    expect(reconstituted.Links.map((l) => l.Name)).to.be.eql([
+    assert.deepEqual(reconstituted.Links.map((l) => l.Name), [
       'some link',
       'some other link'
     ])
@@ -184,11 +185,13 @@ describe('dag-pb', () => {
       Tsize: 262158
     }]
 
-    const node = { Name: new TextEncoder().encode('some data'), Links: links }
-    const reconstituted = decode(encode(prepare(node)))
+    const node = { Data: new TextEncoder().encode('some data'), Links: links }
+    const prepared = prepare(node)
+    assert.deepEqual(prepared, node)
+    const reconstituted = decode(encode(node))
 
     // check sorting
-    expect(reconstituted.Links.map((l) => l.Hash)).to.be.eql(links.map(l => l.Hash))
+    assert.deepEqual(reconstituted.Links.map((l) => l.Hash), links.map(l => l.Hash))
   })
 
   it('prepare & create with empty link name', () => {
@@ -198,43 +201,46 @@ describe('dag-pb', () => {
         CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
       ]
     }
-    const reconstituted = decode(encode(prepare(node)))
-    expect(reconstituted.Links[0].Name).to.be.eql('')
-    // fix it up locally for deep comparison
-    node.Links[0] = { Name: '', Tsize: 0, Hash: node.Links[0] }
-    expect(node).to.deep.equal(reconstituted)
+    const expected = { Data: node.Data, Links: [{ Name: null, Tsize: null, Hash: node.Links[0] }] }
+    const prepared = prepare(node)
+    assert.deepEqual(prepared, expected)
+    const reconstituted = decode(encode(prepared))
+    assert.strictEqual(reconstituted.Links[0].Name, null)
+    assert.deepEqual(reconstituted, expected)
   })
 
   it('prepare & create with undefined link name', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
-        { Tsize: 10, Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U') }
+        { Tsize: 10, Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'), Name: null }
       ]
     }
-
-    const reconstituted = decode(encode(prepare(node)))
-    expect(reconstituted.Links[0].Name).to.be.eql('')
-    node.Links[0].Name = '' // fix it up locally for deep comparison
-    expect(node).to.deep.equal(reconstituted)
+    const prepared = prepare(node)
+    assert.deepEqual(prepared, node)
+    const reconstituted = decode(encode(prepared))
+    assert.deepEqual(reconstituted, node)
   })
 
   it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
     const reconstituted = decode(encode(prepare(node)))
-    expect({ Data: new TextEncoder().encode('hello'), Links: [] }).to.deep.equal(reconstituted)
+    assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello'), Links: null })
   })
 
   it('prepare & create an empty node', () => {
-    // this node is not in the repo as we don't copy node data to the browser
     const node = new Uint8Array(0)
-    const reconstituted = decode(encode(prepare(node)))
-    expect({ Data: new Uint8Array(0), Links: [] }).to.deep.equal(reconstituted)
+    const prepared = prepare(node)
+    assert.deepEqual(prepared, { Data: null, Links: null })
+    const reconstituted = decode(encode(prepared))
+    assert.deepEqual(reconstituted, { Data: null, Links: null })
   })
 
   it('prepare & create an empty node from object', () => {
-    const reconstituted = decode(encode(prepare({})))
-    expect({ Data: new Uint8Array(0), Links: [] }).to.deep.equal(reconstituted)
+    const prepared = prepare({})
+    assert.deepEqual(prepared, { Data: null, Links: null })
+    const reconstituted = decode(encode(prepared))
+    assert.deepEqual(reconstituted, { Data: null, Links: null })
   })
 
   it('fail to prepare & create a node with other data types', () => {
@@ -247,7 +253,7 @@ describe('dag-pb', () => {
     ]
 
     for (const invalid of invalids) {
-      expect(() => encode(prepare(invalid))).to.throw('Invalid DAG-PB form')
+      assert.throws(() => encode(prepare(invalid)), 'Invalid DAG-PB form')
     }
   })
 
@@ -293,12 +299,12 @@ describe('dag-pb', () => {
     ]
 
     const node = decode(testBlockUnnamedLinks)
-    expect(node.Links).to.deep.eql(expectedLinks)
+    assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
     const hash = await multiformats.multihash.hash(testBlockUnnamedLinks, 'sha2-256')
     const cid = CID.create(0, dagPB(multiformats).code, hash)
-    expect(cid.toString()).to.eql('QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX')
+    assert.strictEqual(cid.toString(), 'QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX')
   })
 
   it('deserialize go-ipfs block with named links', async () => {
@@ -328,30 +334,12 @@ describe('dag-pb', () => {
     ]
 
     const node = decode(testBlockNamedLinks)
-    expect(node.Links).to.deep.eql(expectedLinks)
+    assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
     const hash = await multiformats.multihash.hash(testBlockNamedLinks, 'sha2-256')
     const cid = CID.create(0, dagPB(multiformats).code, hash)
-    expect(cid.toString()).to.eql('QmbSAC58x1tsuPBAoarwGuTQAgghKvdbKSBC8yp5gKCj5M')
-  })
-
-  it('add two nameless links to a node', () => {
-    const l1 = {
-      Name: '',
-      Hash: 'QmbAmuwox51c91FmC2jEX5Ng4zS4HyVgpA5GNPBF5QsWMA',
-      Tsize: 57806
-    }
-
-    const l2 = {
-      Name: '',
-      Hash: 'QmP7SrR76KHK9A916RbHG1ufy2TzNABZgiE23PjZDMzZXy',
-      Tsize: 262158
-    }
-
-    const node = { Data: new TextEncoder().encode('hiya'), Links: [l1, l2] }
-    const reconstituted = decode(encode(prepare(node)))
-    expect(reconstituted.Links).to.have.lengthOf(2)
+    assert.strictEqual(cid.toString(), 'QmbSAC58x1tsuPBAoarwGuTQAgghKvdbKSBC8yp5gKCj5M')
   })
 
   it('prepare & create with multihash bytes', () => {
@@ -363,18 +351,117 @@ describe('dag-pb', () => {
     }
 
     const node = { Name: new TextEncoder().encode('some data'), Links: [link] }
-    const reconstituted = decode(encode(prepare(node)))
+    const prepared = prepare(node)
+    assert.strictEqual(prepared.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
+    const reconstituted = decode(encode(prepared))
 
-    expect(reconstituted.Links[0].Hash.toString()).to.equal('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
+    assert.strictEqual(reconstituted.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
   })
 
-  it('fail to create without multihash', () => {
-    expect(() => {
+  it('fail to create without hash', () => {
+    assert.throws(() => {
       const node = {
         Name: new TextEncoder().encode('some data'),
         Links: [{ Name: 'hello', Tsize: 3 }]
       }
-      encode(prepare(node))
-    }).to.throw('Invalid DAG-PB form')
+      prepare(node)
+    }, 'Invalid DAG-PB form')
+  })
+
+  it('validate good forms', () => {
+    const doesntThrow = (good) => {
+      validate(good)
+      const byts = encode(good)
+      assert.instanceOf(byts, Uint8Array)
+    }
+
+    doesntThrow({ Data: null, Links: null })
+    doesntThrow({ Data: Uint8Array.from([1, 2, 3]), Links: null })
+    doesntThrow({ Data: null, Links: [{ Hash: null, Name: null, Tsize: null }] })
+    doesntThrow({
+      Data: null,
+      Links: [
+        { Hash: null, Name: null, Tsize: null },
+        { Hash: null, Name: 'bar', Tsize: null },
+        { Hash: null, Name: 'foo', Tsize: null }
+      ]
+    })
+    doesntThrow({
+      Data: null,
+      Links: [
+        { Hash: null, Name: null, Tsize: null },
+        { Hash: null, Name: 'a', Tsize: null },
+        { Hash: null, Name: 'a', Tsize: null }
+      ]
+    })
+    const l = { Hash: null, Name: 'a', Tsize: null }
+    doesntThrow({ Data: null, Links: [l, l] })
+  })
+
+  it('validate fails bad forms', () => {
+    const throws = (bad) => {
+      assert.throws(() => validate(bad))
+      assert.throws(() => encode(bad))
+    }
+
+    for (const bad of [true, false, null, 0, 101, -101, 'blip', [], Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws(bad)
+    }
+
+    throws({})
+
+    // empty links array not allowed, should be null
+    throws({ Data: null, Links: [] })
+
+    throws({ Data: null, Links: null, extraneous: true })
+    throws({ Data: null, Links: [{ Hash: null, Name: null, Tsize: null, extraneous: true }] })
+
+    // bad Data forms
+    for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), []]) {
+      throws({ Data: bad, Links: null })
+    }
+
+    // bad Link array forms
+    for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws({ Data: null, Links: bad })
+    }
+
+    // bad Link forms
+    for (const bad of [true, false, 0, 101, -101, 'blip', {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws({ Data: null, Links: [bad] })
+    }
+
+    // bad Link.Hash forms
+    for (const bad of [true, false, 0, 101, -101, [], {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws({ Data: null, Links: [{ Hash: bad, Name: null, Tsize: null }] })
+    }
+
+    // bad Link.Name forms
+    for (const bad of [true, false, 0, 101, -101, [], {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws({ Data: null, Links: [{ Hash: null, Name: bad, Tsize: null }] })
+    }
+
+    // bad Link.Tsize forms
+    for (const bad of [true, false, [], 'blip', {}, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
+      throws({ Data: null, Links: [{ Hash: null, Name: null, Tsize: bad }] })
+    }
+
+    // bad sort
+    throws({
+      Data: null,
+      Links: [
+        { Hash: null, Name: null, Tsize: null },
+        { Hash: null, Name: 'foo', Tsize: null },
+        { Hash: null, Name: 'bar', Tsize: null }
+      ]
+    })
+    throws({
+      Data: null,
+      Links: [
+        { Hash: null, Name: null, Tsize: null },
+        { Hash: null, Name: 'aa', Tsize: null },
+        { Hash: null, Name: 'a', Tsize: null }
+      ]
+    })
   })
 })

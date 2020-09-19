@@ -46,7 +46,7 @@ function decodeBytes (bytes, offset, wireType, field) {
 }
 
 function decodeLink (bytes) {
-  const link = {}
+  const link = { Hash: null, Name: null, Tsize: null }
   const l = bytes.length
   let index = 0
   while (index < l) {
@@ -98,7 +98,7 @@ function decodeLink (bytes) {
 function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
-  const node = { Links: [] }
+  const node = { Data: null, Links: null }
   const dataChunks = []
   while (index < l) {
     const preIndex = index
@@ -124,6 +124,9 @@ function decodeNode (bytes) {
         break
       case 2:
         ;[byts, index] = decodeBytes(bytes, index, wireType, 'Links')
+        if (!node.Links) {
+          node.Links = []
+        }
         node.Links.push(decodeLink(byts))
         break
       /* c8 ignore next 2 */

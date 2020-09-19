@@ -13,8 +13,8 @@ function linkComparator (a, b) {
     return 0
   }
 
-  const abuf = textEncoder.encode(a.Name)
-  const bbuf = textEncoder.encode(b.Name)
+  const abuf = a.Name ? textEncoder.encode(a.Name) : []
+  const bbuf = b.Name ? textEncoder.encode(b.Name) : []
 
   let x = abuf.length
   let y = bbuf.length
@@ -39,7 +39,7 @@ function create (multiformats) {
 
   const asLink = (link) => {
     if (typeof link.asCID === 'object') {
-      return { Hash: CID.asCID(link), Name: '', Tsize: 0 }
+      return { Hash: CID.asCID(link), Name: null, Tsize: null }
     }
 
     let cid
@@ -53,8 +53,8 @@ function create (multiformats) {
 
     return {
       Hash: cid,
-      Name: link.Name || '',
-      Tsize: link.Tsize || 0
+      Name: typeof link.Name === 'string' ? link.Name : null,
+      Tsize: typeof link.Tsize === 'number' ? link.Tsize : null
     }
   }
 
@@ -67,7 +67,7 @@ function create (multiformats) {
       throw new TypeError('Invalid DAG-PB form')
     }
 
-    const pbn = {}
+    const pbn = { Data: null, Links: null }
 
     if (node.Data) {
       if (typeof node.Data === 'string') {
@@ -78,11 +78,9 @@ function create (multiformats) {
       }
     }
 
-    if (node.Links && node.Links.length > 0) {
+    if (node.Links) {
       pbn.Links = node.Links.map(asLink)
       pbn.Links.sort(linkComparator)
-    } else {
-      pbn.Links = []
     }
 
     return pbn
@@ -109,12 +107,20 @@ function create (multiformats) {
       throw new TypeError('Invalid DAG-PB form (extraneous properties)')
     }
 
+    if (node.Data !== null && !(node.Data instanceof Uint8Array)) {
+      throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
+    }
+
+    if (node.Links === null) {
+      return
+    }
+
     if (!Array.isArray(node.Links)) {
       throw new TypeError('Invalid DAG-PB form (Links must be an array)')
     }
 
-    if (node.Data && !(node.Data instanceof Uint8Array)) {
-      throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
+    if (!node.Links.length) {
+      throw new TypeError('Invalid DAG-PB form (empty Links array must be null)')
     }
 
     for (let i = 0; i < node.Links.length; i++) {
@@ -127,15 +133,15 @@ function create (multiformats) {
         throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
       }
 
-      if (link.Hash && link.Hash.asCID !== link.Hash) {
+      if (link.Hash !== null && link.Hash.asCID !== link.Hash) {
         throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
       }
 
-      if (typeof link.Name !== 'string') {
+      if (link.Name !== null && typeof link.Name !== 'string') {
         throw new TypeError('Invalid DAG-PB form (link Name must be a string)')
       }
 
-      if (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0) {
+      if (link.Tsize !== null && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
         throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
       }
 
@@ -148,9 +154,9 @@ function create (multiformats) {
   const encode = (node) => {
     validate(node)
     const pbn = {
-      Links: node.Links.map((l) => {
+      Links: node.Links && node.Links.map((l) => {
         return {
-          Hash: l.Hash.bytes, // cid -> bytes
+          Hash: l.Hash && l.Hash.bytes, // cid -> bytes
           Name: l.Name,
           Tsize: l.Tsize
         }
@@ -167,14 +173,14 @@ function create (multiformats) {
     const pbn = decodeNode(bytes)
 
     const node = {
-      Links: pbn.Links.map((link) => {
+      Links: pbn.Links && pbn.Links.map((link) => {
         return {
           Name: link.Name,
           Tsize: link.Tsize,
           Hash: new CID(link.Hash)
         }
       }),
-      Data: pbn.Data == null ? new Uint8Array(0) : pbn.Data
+      Data: pbn.Data
     }
 
     return node
