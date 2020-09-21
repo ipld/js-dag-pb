@@ -39,23 +39,35 @@ function create (multiformats) {
 
   const asLink = (link) => {
     if (typeof link.asCID === 'object') {
-      return { Hash: CID.asCID(link), Name: null, Tsize: null }
+      return { Hash: CID.asCID(link) }
     }
 
-    let cid
-    try {
-      cid = CID.from(link.Hash)
-    } catch (e) {}
-
-    if (!cid) {
-      throw new TypeError('Invalid DAG-PB form (bad Hash/CID)')
+    if (typeof link !== 'object' || Array.isArray(link)) {
+      throw new TypeError('Invalid DAG-PB form')
     }
 
-    return {
-      Hash: cid,
-      Name: typeof link.Name === 'string' ? link.Name : null,
-      Tsize: typeof link.Tsize === 'number' ? link.Tsize : null
+    const pbl = {}
+
+    if (link.Hash) {
+      let cid
+      try {
+        cid = CID.from(link.Hash)
+      } catch (e) {}
+
+      if (cid) {
+        pbl.Hash = cid
+      }
     }
+
+    if (typeof link.Name === 'string') {
+      pbl.Name = link.Name
+    }
+
+    if (typeof link.Tsize === 'number') {
+      pbl.Tsize = link.Tsize
+    }
+
+    return pbl
   }
 
   const prepare = (node) => {
@@ -67,7 +79,7 @@ function create (multiformats) {
       throw new TypeError('Invalid DAG-PB form')
     }
 
-    const pbn = { Data: null, Links: null }
+    const pbn = {}
 
     if (node.Data) {
       if (typeof node.Data === 'string') {
@@ -78,7 +90,7 @@ function create (multiformats) {
       }
     }
 
-    if (node.Links) {
+    if (node.Links && Array.isArray(node.Links) && node.Links.length) {
       pbn.Links = node.Links.map(asLink)
       pbn.Links.sort(linkComparator)
     }
@@ -107,11 +119,11 @@ function create (multiformats) {
       throw new TypeError('Invalid DAG-PB form (extraneous properties)')
     }
 
-    if (node.Data !== null && !(node.Data instanceof Uint8Array)) {
+    if (node.Data !== undefined && !(node.Data instanceof Uint8Array)) {
       throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
     }
 
-    if (node.Links === null) {
+    if (node.Links === undefined) {
       return
     }
 
@@ -120,7 +132,7 @@ function create (multiformats) {
     }
 
     if (!node.Links.length) {
-      throw new TypeError('Invalid DAG-PB form (empty Links array must be null)')
+      throw new TypeError('Invalid DAG-PB form (empty Links array must be omitted)')
     }
 
     for (let i = 0; i < node.Links.length; i++) {
@@ -133,15 +145,15 @@ function create (multiformats) {
         throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
       }
 
-      if (link.Hash !== null && link.Hash.asCID !== link.Hash) {
+      if (link.Hash !== undefined && link.Hash.asCID !== link.Hash) {
         throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
       }
 
-      if (link.Name !== null && typeof link.Name !== 'string') {
+      if (link.Name !== undefined && typeof link.Name !== 'string') {
         throw new TypeError('Invalid DAG-PB form (link Name must be a string)')
       }
 
-      if (link.Tsize !== null && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
+      if (link.Tsize !== undefined && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
         throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
       }
 
@@ -153,13 +165,20 @@ function create (multiformats) {
 
   const encode = (node) => {
     validate(node)
-    const pbn = {
-      Links: node.Links && node.Links.map((l) => {
-        return {
-          Hash: l.Hash && l.Hash.bytes, // cid -> bytes
-          Name: l.Name,
-          Tsize: l.Tsize
+    const pbn = {}
+    if (node.Links) {
+      pbn.Links = node.Links.map((l) => {
+        const link = {}
+        if (l.Hash) {
+          link.Hash = l.Hash.bytes // cid -> bytes
         }
+        if (l.Name !== undefined) {
+          link.Name = l.Name
+        }
+        if (l.Tsize !== undefined) {
+          link.Tsize = l.Tsize
+        }
+        return link
       })
     }
     if (node.Data) {
@@ -172,17 +191,25 @@ function create (multiformats) {
   const decode = (bytes) => {
     const pbn = decodeNode(bytes)
 
-    const node = {
-      Links: pbn.Links && pbn.Links.map((link) => {
-        return {
-          Name: link.Name,
-          Tsize: link.Tsize,
-          Hash: new CID(link.Hash)
-        }
-      }),
-      Data: pbn.Data
+    const node = {}
+    if (pbn.Data) {
+      node.Data = pbn.Data
     }
-
+    if (pbn.Links) {
+      node.Links = pbn.Links && pbn.Links.map((l) => {
+        const link = {}
+        if (l.Hash) {
+          link.Hash = new CID(l.Hash)
+        }
+        if (l.Name !== undefined) {
+          link.Name = l.Name
+        }
+        if (l.Tsize !== undefined) {
+          link.Tsize = l.Tsize
+        }
+        return link
+      })
+    }
     return node
   }
 

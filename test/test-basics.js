@@ -15,7 +15,7 @@ multicodec.add(dagPB)
 
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const decode = (v) => multicodec.decode(v, 'dag-pb')
-const { prepare, validate } = dagPB(multiformats)
+const { prepare } = dagPB(multiformats)
 
 function linkCidsToStrings (links) {
   return links.map((l) => {
@@ -27,10 +27,10 @@ function linkCidsToStrings (links) {
   })
 }
 
-describe('dag-pb', () => {
+describe('Basics', () => {
   it('prepare & encode an empty node', () => {
     const prepared = prepare({})
-    assert.deepEqual(prepared, { Data: null, Links: null })
+    assert.deepEqual(prepared, {})
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
     assert.strictEqual(result.length, 0)
@@ -39,7 +39,7 @@ describe('dag-pb', () => {
   it('prepare & encode a node with data', () => {
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     const prepared = prepare({ Data: data })
-    assert.deepEqual(prepared, { Data: data, Links: null })
+    assert.deepEqual(prepared, { Data: data })
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
@@ -52,26 +52,22 @@ describe('dag-pb', () => {
       { Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
     ]
     const prepared = prepare({ Links: links })
-    assert.deepEqual(prepared, { Data: null, Links: [{ Hash: links[0].Hash, Name: null, Tsize: null }] })
+    assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings([{
-      Name: null,
-      Tsize: null,
       Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]))
   })
 
   it('prepare & encode a node with links as plain objects', () => {
     const links = [{
-      Name: null,
-      Tsize: null,
       Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]
     const prepared = prepare({ Links: links })
-    assert.deepEqual(prepared, { Data: null, Links: [{ Hash: links[0].Hash, Name: null, Tsize: null }] })
+    assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
@@ -81,7 +77,7 @@ describe('dag-pb', () => {
 
   it('ignore invalid properties when preparing', () => {
     const prepared = prepare({ foo: 'bar' })
-    assert.deepEqual(prepared, { Data: null, Links: null })
+    assert.deepEqual(prepared, {})
     const result = encode(prepared)
     assert.strictEqual(result.length, 0)
   })
@@ -89,7 +85,7 @@ describe('dag-pb', () => {
   it('prepare & create a node with string data', () => {
     const data = 'some data'
     const prepared = prepare({ Data: data })
-    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: null })
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data) })
     const serialized = encode(prepared)
     const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
@@ -98,7 +94,7 @@ describe('dag-pb', () => {
   it('prepare & create a node with bare string', () => {
     const data = 'some data'
     const prepared = prepare(data)
-    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: null })
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data) })
     const serialized = encode(prepared)
     const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
@@ -201,11 +197,10 @@ describe('dag-pb', () => {
         CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
       ]
     }
-    const expected = { Data: node.Data, Links: [{ Name: null, Tsize: null, Hash: node.Links[0] }] }
+    const expected = { Data: node.Data, Links: [{ Hash: node.Links[0] }] }
     const prepared = prepare(node)
     assert.deepEqual(prepared, expected)
     const reconstituted = decode(encode(prepared))
-    assert.strictEqual(reconstituted.Links[0].Name, null)
     assert.deepEqual(reconstituted, expected)
   })
 
@@ -213,7 +208,7 @@ describe('dag-pb', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
-        { Tsize: 10, Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'), Name: null }
+        { Tsize: 10, Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U') }
       ]
     }
     const prepared = prepare(node)
@@ -225,22 +220,22 @@ describe('dag-pb', () => {
   it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
     const reconstituted = decode(encode(prepare(node)))
-    assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello'), Links: null })
+    assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello') })
   })
 
   it('prepare & create an empty node', () => {
     const node = new Uint8Array(0)
     const prepared = prepare(node)
-    assert.deepEqual(prepared, { Data: null, Links: null })
+    assert.deepEqual(prepared, {})
     const reconstituted = decode(encode(prepared))
-    assert.deepEqual(reconstituted, { Data: null, Links: null })
+    assert.deepEqual(reconstituted, {})
   })
 
   it('prepare & create an empty node from object', () => {
     const prepared = prepare({})
-    assert.deepEqual(prepared, { Data: null, Links: null })
+    assert.deepEqual(prepared, {})
     const reconstituted = decode(encode(prepared))
-    assert.deepEqual(reconstituted, { Data: null, Links: null })
+    assert.deepEqual(reconstituted, {})
   })
 
   it('fail to prepare & create a node with other data types', () => {
@@ -255,6 +250,29 @@ describe('dag-pb', () => {
     for (const invalid of invalids) {
       assert.throws(() => encode(prepare(invalid)), 'Invalid DAG-PB form')
     }
+  })
+
+  it('fail to prepare & create a link with other data types', () => {
+    const invalids = [
+      [],
+      true,
+      100,
+      () => {},
+      Symbol.for('nope')
+    ]
+
+    for (const invalid of invalids) {
+      assert.throws(() => encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
+    }
+  })
+
+  it('fail to create link with bad CID hash', () => {
+    const prepared = prepare({
+      Links: [{
+        Hash: Uint8Array.from([0xf0, 1, 2, 3, 4]) // doesn't decode as CID
+      }]
+    })
+    assert.deepEqual(prepared, { Links: [{}] })
   })
 
   it('deserialize go-ipfs block with unnamed links', async () => {
@@ -350,7 +368,7 @@ describe('dag-pb', () => {
       Hash: linkHash
     }
 
-    const node = { Name: new TextEncoder().encode('some data'), Links: [link] }
+    const node = { Data: new TextEncoder().encode('some data'), Links: [link] }
     const prepared = prepare(node)
     assert.strictEqual(prepared.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
     const reconstituted = decode(encode(prepared))
@@ -358,110 +376,11 @@ describe('dag-pb', () => {
     assert.strictEqual(reconstituted.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
   })
 
-  it('fail to create without hash', () => {
-    assert.throws(() => {
-      const node = {
-        Name: new TextEncoder().encode('some data'),
-        Links: [{ Name: 'hello', Tsize: 3 }]
-      }
-      prepare(node)
-    }, 'Invalid DAG-PB form')
-  })
-
-  it('validate good forms', () => {
-    const doesntThrow = (good) => {
-      validate(good)
-      const byts = encode(good)
-      assert.instanceOf(byts, Uint8Array)
+  it('create without hash', () => {
+    const node = {
+      Data: new TextEncoder().encode('some data'),
+      Links: [{ Name: 'hello', Tsize: 3 }]
     }
-
-    doesntThrow({ Data: null, Links: null })
-    doesntThrow({ Data: Uint8Array.from([1, 2, 3]), Links: null })
-    doesntThrow({ Data: null, Links: [{ Hash: null, Name: null, Tsize: null }] })
-    doesntThrow({
-      Data: null,
-      Links: [
-        { Hash: null, Name: null, Tsize: null },
-        { Hash: null, Name: 'bar', Tsize: null },
-        { Hash: null, Name: 'foo', Tsize: null }
-      ]
-    })
-    doesntThrow({
-      Data: null,
-      Links: [
-        { Hash: null, Name: null, Tsize: null },
-        { Hash: null, Name: 'a', Tsize: null },
-        { Hash: null, Name: 'a', Tsize: null }
-      ]
-    })
-    const l = { Hash: null, Name: 'a', Tsize: null }
-    doesntThrow({ Data: null, Links: [l, l] })
-  })
-
-  it('validate fails bad forms', () => {
-    const throws = (bad) => {
-      assert.throws(() => validate(bad))
-      assert.throws(() => encode(bad))
-    }
-
-    for (const bad of [true, false, null, 0, 101, -101, 'blip', [], Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws(bad)
-    }
-
-    throws({})
-
-    // empty links array not allowed, should be null
-    throws({ Data: null, Links: [] })
-
-    throws({ Data: null, Links: null, extraneous: true })
-    throws({ Data: null, Links: [{ Hash: null, Name: null, Tsize: null, extraneous: true }] })
-
-    // bad Data forms
-    for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), []]) {
-      throws({ Data: bad, Links: null })
-    }
-
-    // bad Link array forms
-    for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Data: null, Links: bad })
-    }
-
-    // bad Link forms
-    for (const bad of [true, false, 0, 101, -101, 'blip', {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Data: null, Links: [bad] })
-    }
-
-    // bad Link.Hash forms
-    for (const bad of [true, false, 0, 101, -101, [], {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Data: null, Links: [{ Hash: bad, Name: null, Tsize: null }] })
-    }
-
-    // bad Link.Name forms
-    for (const bad of [true, false, 0, 101, -101, [], {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Data: null, Links: [{ Hash: null, Name: bad, Tsize: null }] })
-    }
-
-    // bad Link.Tsize forms
-    for (const bad of [true, false, [], 'blip', {}, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Data: null, Links: [{ Hash: null, Name: null, Tsize: bad }] })
-    }
-
-    // bad sort
-    throws({
-      Data: null,
-      Links: [
-        { Hash: null, Name: null, Tsize: null },
-        { Hash: null, Name: 'foo', Tsize: null },
-        { Hash: null, Name: 'bar', Tsize: null }
-      ]
-    })
-    throws({
-      Data: null,
-      Links: [
-        { Hash: null, Name: null, Tsize: null },
-        { Hash: null, Name: 'aa', Tsize: null },
-        { Hash: null, Name: 'a', Tsize: null }
-      ]
-    })
+    assert.deepEqual(prepare(node), node)
   })
 })
