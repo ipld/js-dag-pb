@@ -226,9 +226,9 @@ describe('Basics', () => {
   it('prepare & create an empty node', () => {
     const node = new Uint8Array(0)
     const prepared = prepare(node)
-    assert.deepEqual(prepared, {})
+    assert.deepEqual(prepared, { Data: new Uint8Array(0) })
     const reconstituted = decode(encode(prepared))
-    assert.deepEqual(reconstituted, {})
+    assert.deepEqual(reconstituted, { Data: new Uint8Array(0) })
   })
 
   it('prepare & create an empty node from object', () => {

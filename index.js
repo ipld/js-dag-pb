@@ -84,8 +84,7 @@ function create (multiformats) {
     if (node.Data) {
       if (typeof node.Data === 'string') {
         pbn.Data = textEncoder.encode(node.Data)
-      } else if (node.Data instanceof Uint8Array & node.Data.length > 0) {
-        // zero-length data must be null, can't be Uint8Array(0)
+      } else if (node.Data instanceof Uint8Array) {
         pbn.Data = node.Data
       }
     }
