@@ -12,7 +12,8 @@ const { assert } = chai
 const { multicodec, CID, bytes } = multiformats
 multicodec.add(dagPB)
 
-// const acid = multiformats.CID.from('bafkqabiaaebagba')
+// Hash is raw+identity 0x0001020304 CID(bafkqabiaaebagba)
+const acid = new CID(Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4]))
 
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const decode = (v) => multicodec.decode(v, 'dag-pb')
@@ -142,13 +143,8 @@ describe('Forms', () => {
   })
 
   it('Links Hash some', () => {
-    // Hash is raw+identity 0x0001020304 CID(bafkqabiaaebagba)
     verifyRoundTrip({
-      node: {
-        Links: [{
-          Hash: new CID(Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4]))
-        }]
-      },
+      node: { Links: [{ Hash: acid }] },
       expectedBytes: '120b0a09015500050001020304',
       expectedForm: `{
   "Links": [
@@ -177,6 +173,22 @@ describe('Forms', () => {
     verifyRoundTrip(testCase, true)
   })
 
+  // same as above but with a Hash
+  it('Links Hash some Name zero', () => {
+    verifyRoundTrip({
+      node: { Links: [{ Hash: acid, Name: '' }] },
+      expectedBytes: '120d0a090155000500010203041200',
+      expectedForm: `{
+  "Links": [
+    {
+      "Hash": "015500050001020304",
+      "Name": ""
+    }
+  ]
+}`
+    })
+  })
+
   it('Links Name some', () => {
     const testCase = {
       node: { Links: [{ Name: 'some name' }] },
@@ -192,6 +204,22 @@ describe('Forms', () => {
     assert.throws(() => verifyRoundTrip(testCase), /Hash/)
     // bypass straight to encode and it should verify the bytes
     verifyRoundTrip(testCase, true)
+  })
+
+  // same as above but with a Hash
+  it('Links Hash some Name some', () => {
+    verifyRoundTrip({
+      node: { Links: [{ Hash: acid, Name: 'some name' }] },
+      expectedBytes: '12160a090155000500010203041209736f6d65206e616d65',
+      expectedForm: `{
+  "Links": [
+    {
+      "Hash": "015500050001020304",
+      "Name": "some name"
+    }
+  ]
+}`
+    })
   })
 
   it('Links Tsize zero', () => {
@@ -211,6 +239,22 @@ describe('Forms', () => {
     verifyRoundTrip(testCase, true)
   })
 
+  // same as above but with a Hash
+  it('Links Hash some Tsize zero', () => {
+    verifyRoundTrip({
+      node: { Links: [{ Hash: acid, Tsize: 0 }] },
+      expectedBytes: '120d0a090155000500010203041800',
+      expectedForm: `{
+  "Links": [
+    {
+      "Hash": "015500050001020304",
+      "Tsize": 0
+    }
+  ]
+}`
+    })
+  })
+
   it('Links Name some', () => {
     const testCase = {
       node: { Links: [{ Tsize: 1010 }] },
@@ -226,5 +270,21 @@ describe('Forms', () => {
     assert.throws(() => verifyRoundTrip(testCase), /Hash/)
     // bypass straight to encode and it should verify the bytes
     verifyRoundTrip(testCase, true)
+  })
+
+  // same as above but with a Hash
+  it('Links Hash some Name some', () => {
+    verifyRoundTrip({
+      node: { Links: [{ Hash: acid, Tsize: 1010 }] },
+      expectedBytes: '120e0a0901550005000102030418f207',
+      expectedForm: `{
+  "Links": [
+    {
+      "Hash": "015500050001020304",
+      "Tsize": 1010
+    }
+  ]
+}`
+    })
   })
 })
