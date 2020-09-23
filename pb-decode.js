@@ -15,7 +15,7 @@ function decodeVarint (bytes, offset) {
       throw new Error('protobuf: unexpected end of data')
     }
     const b = bytes[offset++]
-    v |= (b & 0x7f) << shift
+    v += shift < 28 ? (b & 0x7f) << shift : (b & 0x7f) * (2 ** shift)
     if (b < 0x80) {
       break
     }

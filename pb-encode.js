@@ -2,7 +2,8 @@
 // https://github.com/ipfs/go-merkledag/blob/master/pb/merkledag.pb.go
 
 const textEncoder = new TextEncoder()
-const maxInt32 = (2 ** 31) - 1 // bitwise above 2^31 is .. tricky
+const maxInt32 = 2 ** 32
+const maxUInt32 = 2 ** 31
 
 // the encoders work backward from the end of the bytes array
 // encodeLink() is passed a slice of the parent byte array that ends where this
@@ -13,7 +14,7 @@ function encodeLink (link, bytes) {
     if (link.Tsize < 0) {
       throw new Error('Tsize cannot be negative')
     }
-    if (link.Tsize > maxInt32) {
+    if (!Number.isSafeInteger(link.Tsize)) {
       throw new Error('Tsize too large for encoding')
     }
     i = encodeVarint(bytes, i, link.Tsize) - 1
@@ -93,10 +94,13 @@ function sizeNode (node) {
 function encodeVarint (bytes, offset, v) {
   offset -= sov(v)
   const base = offset
-  while (v >= (1 << 7)) {
-    bytes[offset] = (v & 0x7f) | 0x80
-    v >>= 7
-    offset++
+  while (v >= maxUInt32) {
+    bytes[offset++] = (v & 0x7f) | 0x80
+    v /= 128
+  }
+  while (v >= 128) {
+    bytes[offset++] = (v & 0x7f) | 0x80
+    v >>>= 7
   }
   bytes[offset] = v
   return base
@@ -113,6 +117,10 @@ function sov (x) {
 // golang math/bits, how many bits does it take to represent this integer?
 function len64 (x) {
   let n = 0
+  if (x >= maxInt32) {
+    x /= maxInt32
+    n = 32
+  }
   if (x >= (1 << 16)) {
     x >>= 16
     n += 16
