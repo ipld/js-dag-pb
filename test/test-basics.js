@@ -258,7 +258,8 @@ describe('Basics', () => {
       true,
       100,
       () => {},
-      Symbol.for('nope')
+      Symbol.for('nope'),
+      { asCID: {} }
     ]
 
     for (const invalid of invalids) {
@@ -267,12 +268,11 @@ describe('Basics', () => {
   })
 
   it('fail to create link with bad CID hash', () => {
-    const prepared = prepare({
+    assert.throws(() => prepare({
       Links: [{
         Hash: Uint8Array.from([0xf0, 1, 2, 3, 4]) // doesn't decode as CID
       }]
-    })
-    assert.deepEqual(prepared, { Links: [{}] })
+    }), 'Invalid DAG-PB form')
   })
 
   it('deserialize go-ipfs block with unnamed links', async () => {
@@ -376,11 +376,11 @@ describe('Basics', () => {
     assert.strictEqual(reconstituted.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
   })
 
-  it('create without hash', () => {
+  it('fail to create without hash', () => {
     const node = {
       Data: new TextEncoder().encode('some data'),
       Links: [{ Name: 'hello', Tsize: 3 }]
     }
-    assert.deepEqual(prepare(node), node)
+    assert.throws(() => prepare(node), 'Invalid DAG-PB form')
   })
 })

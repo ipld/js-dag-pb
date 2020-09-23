@@ -39,7 +39,11 @@ function create (multiformats) {
 
   const asLink = (link) => {
     if (typeof link.asCID === 'object') {
-      return { Hash: CID.asCID(link) }
+      const Hash = CID.asCID(link)
+      if (!Hash) {
+        throw new TypeError('Invalid DAG-PB form')
+      }
+      return { Hash }
     }
 
     if (typeof link !== 'object' || Array.isArray(link)) {
@@ -57,6 +61,10 @@ function create (multiformats) {
       if (cid) {
         pbl.Hash = cid
       }
+    }
+
+    if (!pbl.Hash) {
+      throw new TypeError('Invalid DAG-PB form')
     }
 
     if (typeof link.Name === 'string') {
@@ -101,8 +109,8 @@ function create (multiformats) {
     /*
     type PBLink struct {
       Hash optional Link
-      Name String (implicit "")
-      Tsize Int (implicit "0")
+      Name optional String
+      Tsize optional Int
     }
 
     type PBNode struct {
@@ -144,7 +152,11 @@ function create (multiformats) {
         throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
       }
 
-      if (link.Hash !== undefined && link.Hash.asCID !== link.Hash) {
+      if (!link.Hash) {
+        throw new TypeError('Invalid DAG-PB form (link must have a Hash)')
+      }
+
+      if (link.Hash.asCID !== link.Hash) {
         throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
       }
 

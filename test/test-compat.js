@@ -11,7 +11,8 @@ const { assert } = chai
 
 const { multicodec, CID, bytes } = multiformats
 multicodec.add(dagPB)
-// multihash.add({ code: 0, name: 'identity', encode: (e) => e, decode: (d) => d })
+
+// const acid = multiformats.CID.from('bafkqabiaaebagba')
 
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const decode = (v) => multicodec.decode(v, 'dag-pb')
@@ -92,7 +93,7 @@ describe('Forms', () => {
   })
 
   it('Links empty', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Links: [{}] },
       expectedBytes: '1200',
       expectedForm: `{
@@ -100,11 +101,14 @@ describe('Forms', () => {
     {}
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 
   it('Data some Links empty', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [{}] },
       expectedBytes: '12000a050001020304',
       expectedForm: `{
@@ -113,7 +117,10 @@ describe('Forms', () => {
     {}
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 
   // this is excluded from the spec, it must be a CID bytes
@@ -154,7 +161,7 @@ describe('Forms', () => {
   })
 
   it('Links Name zero', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Links: [{ Name: '' }] },
       expectedBytes: '12021200',
       expectedForm: `{
@@ -164,11 +171,14 @@ describe('Forms', () => {
     }
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 
   it('Links Name some', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Links: [{ Name: 'some name' }] },
       expectedBytes: '120b1209736f6d65206e616d65',
       expectedForm: `{
@@ -178,11 +188,14 @@ describe('Forms', () => {
     }
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 
   it('Links Tsize zero', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Links: [{ Tsize: 0 }] },
       expectedBytes: '12021800',
       expectedForm: `{
@@ -192,11 +205,14 @@ describe('Forms', () => {
     }
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 
   it('Links Name some', () => {
-    verifyRoundTrip({
+    const testCase = {
       node: { Links: [{ Tsize: 1010 }] },
       expectedBytes: '120318f207',
       expectedForm: `{
@@ -206,6 +222,9 @@ describe('Forms', () => {
     }
   ]
 }`
-    })
+    }
+    assert.throws(() => verifyRoundTrip(testCase), /Hash/)
+    // bypass straight to encode and it should verify the bytes
+    verifyRoundTrip(testCase, true)
   })
 })

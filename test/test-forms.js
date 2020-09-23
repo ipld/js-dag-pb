@@ -12,6 +12,8 @@ multicodec.add(dagPB)
 const encode = (v) => multicodec.encode(v, 'dag-pb')
 const { validate } = dagPB(multiformats)
 
+const acid = multiformats.CID.from('bafkqabiaaebagba')
+
 describe('Forms (Data Model)', () => {
   it('validate good forms', () => {
     const doesntThrow = (good) => {
@@ -23,22 +25,21 @@ describe('Forms (Data Model)', () => {
     doesntThrow({})
 
     doesntThrow({ Data: Uint8Array.from([1, 2, 3]) })
-    doesntThrow({ Links: [{}] })
     doesntThrow({
       Links: [
-        {},
-        { Name: 'bar' },
-        { Name: 'foo' }
+        { Hash: acid },
+        { Hash: acid, Name: 'bar' },
+        { Hash: acid, Name: 'foo' }
       ]
     })
     doesntThrow({
       Links: [
-        {},
-        { Name: 'a' },
-        { Name: 'a' }
+        { Hash: acid },
+        { Hash: acid, Name: 'a' },
+        { Hash: acid, Name: 'a' }
       ]
     })
-    const l = { Name: 'a' }
+    const l = { Hash: acid, Name: 'a' }
     doesntThrow({ Links: [l, l] })
   })
 
@@ -58,9 +59,11 @@ describe('Forms (Data Model)', () => {
 
     // empty links array not allowed, should be null
     throws({ Links: [] })
+    // empty link
+    throws({ Links: [{}] })
 
-    throws({ extraneous: true })
-    throws({ Links: [{ extraneous: true }] })
+    throws({ Hash: acid, extraneous: true })
+    throws({ Links: [{ Hash: acid, extraneous: true }] })
 
     // bad Data forms
     for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), []]) {
@@ -84,27 +87,27 @@ describe('Forms (Data Model)', () => {
 
     // bad Link.Name forms
     for (const bad of [true, false, 0, 101, -101, [], {}, Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Links: [{ Name: bad }] })
+      throws({ Links: [{ Hash: acid, Name: bad }] })
     }
 
     // bad Link.Tsize forms
     for (const bad of [true, false, [], 'blip', {}, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
-      throws({ Links: [{ Tsize: bad }] })
+      throws({ Links: [{ Hash: acid, Tsize: bad }] })
     }
 
     // bad sort
     throws({
       Links: [
-        {},
-        { Name: 'foo' },
-        { Name: 'bar' }
+        { Hash: acid },
+        { Hash: acid, Name: 'foo' },
+        { Hash: acid, Name: 'bar' }
       ]
     })
     throws({
       Links: [
-        {},
-        { Name: 'aa' },
-        { Name: 'a' }
+        { Hash: acid },
+        { Hash: acid, Name: 'aa' },
+        { Hash: acid, Name: 'a' }
       ]
     })
   })
