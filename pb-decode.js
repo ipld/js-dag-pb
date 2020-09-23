@@ -98,7 +98,7 @@ function decodeLink (bytes) {
 function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
-  const node = { }
+  let links
   const dataChunks = []
   while (index < l) {
     const preIndex = index
@@ -124,10 +124,10 @@ function decodeNode (bytes) {
         break
       case 2:
         ;[byts, index] = decodeBytes(bytes, index, wireType, 'Links')
-        if (!node.Links) {
-          node.Links = []
+        if (!links) {
+          links = []
         }
-        node.Links.push(decodeLink(byts))
+        links.push(decodeLink(byts))
         break
       /* c8 ignore next 2 */
       default:
@@ -140,6 +140,8 @@ function decodeNode (bytes) {
     throw new Error('proto: PBNode: unexpected end of data')
   }
 
+  const node = {}
+
   if (dataChunks.length === 1) { // common case
     node.Data = dataChunks[0]
   // unsure if this next case is even possible or should be permissible
@@ -151,6 +153,10 @@ function decodeNode (bytes) {
       node.Data.set(b, off)
       off += b.length
     }
+  }
+
+  if (links) {
+    node.Links = links
   }
 
   return node

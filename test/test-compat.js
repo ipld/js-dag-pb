@@ -6,6 +6,7 @@ import chai from 'chai'
 import dagPB from '@ipld/dag-pb'
 import multiformats from 'multiformats/basics'
 import encodeNode from '../pb-encode.js'
+import decodeNode from '../pb-decode.js'
 
 const { assert } = chai
 
@@ -21,7 +22,7 @@ const decode = (v) => multicodec.decode(v, 'dag-pb')
 function verifyRoundTrip (testCase, bypass) {
   const actualBytes = (bypass ? encodeNode : encode)(testCase.node)
   assert.strictEqual(bytes.toHex(actualBytes), testCase.expectedBytes)
-  const roundTripNode = decode(actualBytes)
+  const roundTripNode = (bypass ? decodeNode : decode)(actualBytes)
   if (roundTripNode.Data) {
     roundTripNode.Data = bytes.toHex(roundTripNode.Data)
   }
@@ -30,7 +31,7 @@ function verifyRoundTrip (testCase, bypass) {
       if (link.Hash) {
         // they're CIDs which don't stringify well
         // or consistent with our fixtures
-        link.Hash = bytes.toHex(link.Hash.bytes)
+        link.Hash = bytes.toHex(bypass ? link.Hash : link.Hash.bytes)
       }
     }
   }
@@ -38,7 +39,7 @@ function verifyRoundTrip (testCase, bypass) {
   assert.strictEqual(actualForm, testCase.expectedForm)
 }
 
-describe('Forms', () => {
+describe('Compatibility', () => {
   it('empty', () => {
     verifyRoundTrip({
       node: {},
@@ -138,8 +139,11 @@ describe('Forms', () => {
 }`
     }
     assert.throws(() => verifyRoundTrip(testCase), /CID/)
-    // should still error, but in the decoder which can't read this as a CID
-    assert.throws(() => verifyRoundTrip(testCase, true), /decode/)
+    // bypass straight to encode and decode and it should verify the bytes,
+    // the failure is on the way in _and_ out, so we have to bypass encode & decode
+    verifyRoundTrip(testCase, true)
+    // don't bypass decode and check the bad CID test there
+    assert.throws(() => decode(bytes.fromHex(testCase.expectedBytes)), /CID/)
   })
 
   it('Links Hash some', () => {

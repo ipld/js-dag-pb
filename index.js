@@ -203,14 +203,19 @@ function create (multiformats) {
     const pbn = decodeNode(bytes)
 
     const node = {}
+
     if (pbn.Data) {
       node.Data = pbn.Data
     }
+
     if (pbn.Links) {
-      node.Links = pbn.Links && pbn.Links.map((l) => {
+      node.Links = pbn.Links.map((l) => {
         const link = {}
-        if (l.Hash) {
+        try {
           link.Hash = new CID(l.Hash)
+        } catch (e) {}
+        if (!link.Hash) {
+          throw new Error('Invalid Hash field found in link, expected CID')
         }
         if (l.Name !== undefined) {
           link.Name = l.Name
@@ -221,6 +226,7 @@ function create (multiformats) {
         return link
       })
     }
+
     return node
   }
 
