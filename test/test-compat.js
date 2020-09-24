@@ -277,7 +277,7 @@ describe('Compatibility', () => {
   })
 
   // same as above but with a Hash
-  it('Links Hash some Name some', () => {
+  it('Links Hash some Tsize some', () => {
     verifyRoundTrip({
       node: { Links: [{ Hash: acid, Tsize: 1010 }] },
       expectedBytes: '120e0a0901550005000102030418f207',

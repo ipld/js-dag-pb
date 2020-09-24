@@ -24,11 +24,6 @@ function decodeVarint (bytes, offset) {
 }
 
 function decodeBytes (bytes, offset, wireType, field) {
-  /* c8 ignore next 3 */
-  if (wireType !== 2) {
-    throw new Error(`protobuf: wrong wireType = ${wireType} for field ${field}`)
-  }
-
   let byteLen
   ;[byteLen, offset] = decodeVarint(bytes, offset)
   const postOffset = offset + byteLen
@@ -45,51 +40,64 @@ function decodeBytes (bytes, offset, wireType, field) {
   return [bytes.subarray(offset, postOffset), postOffset]
 }
 
+function decodeKey (bytes, index) {
+  let wire
+  ;[wire, index] = decodeVarint(bytes, index)
+  // [wireType, fieldNum, newIndex]
+  return [wire & 0x7, wire >> 3, index]
+}
+
 function decodeLink (bytes) {
   const link = {}
   const l = bytes.length
   let index = 0
   while (index < l) {
-    const preIndex = index
-    let wire
-    ;[wire, index] = decodeVarint(bytes, index)
-    const fieldNum = wire >> 3
-    const wireType = wire & 0x7
-    /* c8 ignore next 3 */
-    if (wireType === 4) {
-      throw new Error('protobuf: groups are not supported')
-    }
-    /* c8 ignore next 3 */
-    if (fieldNum <= 0) {
-      throw new Error(`protobuf: illegal tag ${fieldNum} (wire type ${wire})`)
-    }
+    let wireType, fieldNum
+    ;[wireType, fieldNum, index] = decodeKey(bytes, index)
 
-    let byts
-
-    switch (fieldNum) {
-      case 1:
-        ;[link.Hash, index] = decodeBytes(bytes, index, wireType, 'Hash')
-        break
-      case 2:
-        ;[byts, index] = decodeBytes(bytes, index, wireType, 'Name')
-        link.Name = textDecoder.decode(byts)
-        break
-      case 3:
-        /* c8 ignore next 3 */
-        if (wireType !== 0) {
-          throw new Error(`proto: wrong wireType = ${wireType} for field Tsize`)
-        }
-        ;[link.Tsize, index] = decodeVarint(bytes, index)
-        break
-      /* c8 ignore next 2 */
-      default:
-        index = skipBytes(bytes, preIndex)
+    if (fieldNum === 1) {
+      if (link.Hash) {
+        throw new Error('protobuf: (PBLink) duplicate Hash section')
+      }
+      if (wireType !== 2) {
+        throw new Error(`protobuf: (PBLink) wrong wireType (${wireType}) for Hash`)
+      }
+      if (link.Name !== undefined) {
+        throw new Error('protobuf: (PBLink) invalid order, found Name before Hash')
+      }
+      if (link.Tsize !== undefined) {
+        throw new Error('protobuf: (PBLink) invalid order, found Tsize before Hash')
+      }
+      ;[link.Hash, index] = decodeBytes(bytes, index, wireType, 'Hash')
+    } else if (fieldNum === 2) {
+      if (link.Name !== undefined) {
+        throw new Error('protobuf: (PBLink) duplicate Name section')
+      }
+      if (wireType !== 2) {
+        throw new Error(`protobuf: (PBLink) wrong wireType (${wireType}) for Name`)
+      }
+      if (link.Tsize !== undefined) {
+        throw new Error('protobuf: (PBLink) invalid order, found Tsize before Name')
+      }
+      let byts
+      ;[byts, index] = decodeBytes(bytes, index, wireType, 'Name')
+      link.Name = textDecoder.decode(byts)
+    } else if (fieldNum === 3) {
+      if (link.Tsize !== undefined) {
+        throw new Error('protobuf: (PBLink) duplicate Tsize section')
+      }
+      if (wireType !== 0) {
+        throw new Error(`protobuf: (PBLink) wrong wireType (${wireType}) for Tsize`)
+      }
+      ;[link.Tsize, index] = decodeVarint(bytes, index)
+    } else {
+      throw new Error(`protobuf: (PBLink) invalid fieldNumber, expected 1, 2 or 3, got ${fieldNum}`)
     }
   }
 
   /* c8 ignore next 3 */
   if (index > l) {
-    throw new Error('protobuf: unexpected end of data')
+    throw new Error('protobuf: (PBLink) unexpected end of data')
   }
 
   return link
@@ -99,116 +107,47 @@ function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
   let links
-  const dataChunks = []
+  let data
   while (index < l) {
-    const preIndex = index
-    let wire
-    ;[wire, index] = decodeVarint(bytes, index)
-    const fieldNum = wire >> 3
-    const wireType = wire & 0x7
-    /* c8 ignore next 3 */
-    if (wireType === 4) {
-      throw new Error('protobuf: groups are not supported')
-    }
-    /* c8 ignore next 3 */
-    if (fieldNum <= 0) {
-      throw new Error(`proto: PBNode: illegal tag ${fieldNum} (wire type ${wire})`)
+    let wireType, fieldNum
+    ;[wireType, fieldNum, index] = decodeKey(bytes, index)
+    if (wireType !== 2) {
+      throw new Error(`protobuf: (PBNode) invalid wireType, expected 2, got ${wireType}`)
     }
 
-    let byts
-
-    switch (fieldNum) {
-      case 1:
-        ;[byts, index] = decodeBytes(bytes, index, wireType, 'Data')
-        dataChunks.push(byts)
-        break
-      case 2:
-        ;[byts, index] = decodeBytes(bytes, index, wireType, 'Links')
-        if (!links) {
-          links = []
-        }
-        links.push(decodeLink(byts))
-        break
-      /* c8 ignore next 2 */
-      default:
-        index = skipBytes(bytes, preIndex)
+    if (fieldNum === 1) {
+      if (data) {
+        throw new Error('protobuf: (PBNode) duplicate Data section')
+      }
+      ;[data, index] = decodeBytes(bytes, index, wireType, 'Data')
+    } else if (fieldNum === 2) {
+      if (data) {
+        throw new Error('protobuf: (PBNode) invalid order, found Data before Links content')
+      }
+      let byts
+      ;[byts, index] = decodeBytes(bytes, index, wireType, 'Links')
+      if (!links) {
+        links = []
+      }
+      links.push(decodeLink(byts))
+    } else {
+      throw new Error(`protobuf: (PBNode) invalid fieldNumber, expected 1 or 2, got ${fieldNum}`)
     }
   }
 
   /* c8 ignore next 3 */
   if (index > l) {
-    throw new Error('proto: PBNode: unexpected end of data')
+    throw new Error('protobuf: (PBNode) unexpected end of data')
   }
 
   const node = {}
-
-  if (dataChunks.length === 1) { // common case
-    node.Data = dataChunks[0]
-  // unsure if this next case is even possible or should be permissible
-  /* c8 ignore next 8 */
-  } else if (dataChunks.length) {
-    node.Data = new Uint8Array(dataChunks.reduce((p, c) => p + c.length, 0))
-    let off = 0
-    for (const b of dataChunks) {
-      node.Data.set(b, off)
-      off += b.length
-    }
+  if (data) {
+    node.Data = data
   }
-
   if (links) {
     node.Links = links
   }
-
   return node
-}
-
-// protobuf looseness, not ideal but it is what it is
-/* c8 ignore next 10 */
-function skipBytes (bytes, offset) {
-  const skippy = skip(bytes.subarray(offset))
-  if (skippy < 0 || offset + skippy < 0) {
-    throw new Error('protobuf: invalid length')
-  }
-  if (offset + skippy > bytes.length) {
-    throw new Error('protobuf: unexpected end of data')
-  }
-  return offset + skippy
-}
-
-/* c8 ignore next 34 */
-function skip (bytes) {
-  let index = 0
-  while (index < bytes.length) {
-    let wire = 0
-    ;[wire, index] = decodeVarint(bytes, index)
-    let length = 0
-    const wireType = wire & 0x7
-    switch (wireType) {
-      case 0:
-        ;[, index] = decodeVarint(bytes, index)
-        break
-      case 1:
-        index += 8
-        break
-      case 2:
-        ;[length, index] = decodeVarint(bytes, index)
-        index += length
-        if (length < 0 || index < 0) {
-          throw new Error('proto: invalid length')
-        }
-        break
-      case 3:
-      case 4:
-        throw new Error('protobuf: groups are not supported')
-      case 5:
-        index += 4
-        break
-      default:
-        throw new Error(`proto: illegal wireType ${wireType}`)
-    }
-    return index
-  }
-  throw new Error('proto: unexpected end of data')
 }
 
 export default decodeNode
