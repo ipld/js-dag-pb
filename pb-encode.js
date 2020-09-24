@@ -1,6 +1,3 @@
-// port and refactor of codegen'd Go version @
-// https://github.com/ipfs/go-merkledag/blob/master/pb/merkledag.pb.go
-
 const textEncoder = new TextEncoder()
 const maxInt32 = 2 ** 32
 const maxUInt32 = 2 ** 31
@@ -10,6 +7,7 @@ const maxUInt32 = 2 ** 31
 // link needs to end, so it packs to the right-most part of the passed `bytes`
 function encodeLink (link, bytes) {
   let i = bytes.length
+
   if (typeof link.Tsize === 'number') {
     if (link.Tsize < 0) {
       throw new Error('Tsize cannot be negative')
@@ -20,6 +18,7 @@ function encodeLink (link, bytes) {
     i = encodeVarint(bytes, i, link.Tsize) - 1
     bytes[i] = 0x18
   }
+
   if (typeof link.Name === 'string') {
     const nameBytes = textEncoder.encode(link.Name)
     i -= nameBytes.length
@@ -27,12 +26,14 @@ function encodeLink (link, bytes) {
     i = encodeVarint(bytes, i, nameBytes.length) - 1
     bytes[i] = 0x12
   }
+
   if (link.Hash) {
     i -= link.Hash.length
     bytes.set(link.Hash, i)
     i = encodeVarint(bytes, i, link.Hash.length) - 1
     bytes[i] = 0xa
   }
+
   return bytes.length - i
 }
 
@@ -41,12 +42,14 @@ function encodeNode (node) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
   let i = size
+
   if (node.Data) {
     i -= node.Data.length
     bytes.set(node.Data, i)
     i = encodeVarint(bytes, i, node.Data.length) - 1
     bytes[i] = 0xa
   }
+
   if (node.Links) {
     for (let index = node.Links.length - 1; index >= 0; index--) {
       const size = encodeLink(node.Links[index], bytes.subarray(0, i))
@@ -55,54 +58,66 @@ function encodeNode (node) {
       bytes[i] = 0x12
     }
   }
+
   return bytes
 }
 
 // work out exactly how many bytes this link takes up
 function sizeLink (link) {
   let n = 0
+
   if (link.Hash) {
     const l = link.Hash.length
     n += 1 + l + sov(l)
   }
+
   if (typeof link.Name === 'string') {
     const l = textEncoder.encode(link.Name).length
     n += 1 + l + sov(l)
   }
+
   if (typeof link.Tsize === 'number') {
     n += 1 + sov(link.Tsize)
   }
+
   return n
 }
 
 // work out exactly how many bytes this node takes up
 function sizeNode (node) {
   let n = 0
+
   if (node.Data) {
     const l = node.Data.length
     n += 1 + l + sov(l)
   }
+
   if (node.Links) {
     for (const link of node.Links) {
       const l = sizeLink(link)
       n += 1 + l + sov(l)
     }
   }
+
   return n
 }
 
 function encodeVarint (bytes, offset, v) {
   offset -= sov(v)
   const base = offset
+
   while (v >= maxUInt32) {
     bytes[offset++] = (v & 0x7f) | 0x80
     v /= 128
   }
+
   while (v >= 128) {
     bytes[offset++] = (v & 0x7f) | 0x80
     v >>>= 7
   }
+
   bytes[offset] = v
+
   return base
 }
 

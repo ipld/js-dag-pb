@@ -1,19 +1,18 @@
-// port and refactor of codegen'd Go version @
-// https://github.com/ipfs/go-merkledag/blob/master/pb/merkledag.pb.go
-
 const textDecoder = new TextDecoder()
 
 function decodeVarint (bytes, offset) {
   let v = 0
+
   for (let shift = 0; ; shift += 7) {
     /* c8 ignore next 3 */
-    if (shift >= 64) { // maybe <53?
+    if (shift >= 64) {
       throw new Error('protobuf: varint overflow')
     }
     /* c8 ignore next 3 */
     if (offset >= bytes.length) {
       throw new Error('protobuf: unexpected end of data')
     }
+
     const b = bytes[offset++]
     v += shift < 28 ? (b & 0x7f) << shift : (b & 0x7f) * (2 ** shift)
     if (b < 0x80) {
@@ -23,7 +22,7 @@ function decodeVarint (bytes, offset) {
   return [v, offset]
 }
 
-function decodeBytes (bytes, offset, wireType, field) {
+function decodeBytes (bytes, offset) {
   let byteLen
   ;[byteLen, offset] = decodeVarint(bytes, offset)
   const postOffset = offset + byteLen
@@ -51,6 +50,7 @@ function decodeLink (bytes) {
   const link = {}
   const l = bytes.length
   let index = 0
+
   while (index < l) {
     let wireType, fieldNum
     ;[wireType, fieldNum, index] = decodeKey(bytes, index)
@@ -68,7 +68,8 @@ function decodeLink (bytes) {
       if (link.Tsize !== undefined) {
         throw new Error('protobuf: (PBLink) invalid order, found Tsize before Hash')
       }
-      ;[link.Hash, index] = decodeBytes(bytes, index, wireType, 'Hash')
+
+      ;[link.Hash, index] = decodeBytes(bytes, index)
     } else if (fieldNum === 2) {
       if (link.Name !== undefined) {
         throw new Error('protobuf: (PBLink) duplicate Name section')
@@ -79,8 +80,9 @@ function decodeLink (bytes) {
       if (link.Tsize !== undefined) {
         throw new Error('protobuf: (PBLink) invalid order, found Tsize before Name')
       }
+
       let byts
-      ;[byts, index] = decodeBytes(bytes, index, wireType, 'Name')
+      ;[byts, index] = decodeBytes(bytes, index)
       link.Name = textDecoder.decode(byts)
     } else if (fieldNum === 3) {
       if (link.Tsize !== undefined) {
@@ -89,6 +91,7 @@ function decodeLink (bytes) {
       if (wireType !== 0) {
         throw new Error(`protobuf: (PBLink) wrong wireType (${wireType}) for Tsize`)
       }
+
       ;[link.Tsize, index] = decodeVarint(bytes, index)
     } else {
       throw new Error(`protobuf: (PBLink) invalid fieldNumber, expected 1, 2 or 3, got ${fieldNum}`)
@@ -108,9 +111,11 @@ function decodeNode (bytes) {
   let index = 0
   let links
   let data
+
   while (index < l) {
     let wireType, fieldNum
     ;[wireType, fieldNum, index] = decodeKey(bytes, index)
+
     if (wireType !== 2) {
       throw new Error(`protobuf: (PBNode) invalid wireType, expected 2, got ${wireType}`)
     }
@@ -119,13 +124,15 @@ function decodeNode (bytes) {
       if (data) {
         throw new Error('protobuf: (PBNode) duplicate Data section')
       }
-      ;[data, index] = decodeBytes(bytes, index, wireType, 'Data')
+
+      ;[data, index] = decodeBytes(bytes, index)
     } else if (fieldNum === 2) {
       if (data) {
         throw new Error('protobuf: (PBNode) invalid order, found Data before Links content')
       }
+
       let byts
-      ;[byts, index] = decodeBytes(bytes, index, wireType, 'Links')
+      ;[byts, index] = decodeBytes(bytes, index)
       if (!links) {
         links = []
       }
