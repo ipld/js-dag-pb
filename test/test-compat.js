@@ -42,56 +42,57 @@ function verifyRoundTrip (testCase, bypass) {
 describe('Compatibility', () => {
   it('empty', () => {
     verifyRoundTrip({
-      node: {},
+      node: { Links: [] },
       expectedBytes: '',
-      expectedForm: '{}'
+      expectedForm: `{
+  "Links": []
+}`
     })
   })
 
   it('Data zero', () => {
     verifyRoundTrip({
-      node: { Data: new Uint8Array(0) },
+      node: { Data: new Uint8Array(0), Links: [] },
       expectedBytes: '0a00',
       expectedForm: `{
-  "Data": ""
+  "Data": "",
+  "Links": []
 }`
     })
   })
 
   it('Data some', () => {
     verifyRoundTrip({
-      node: { Data: Uint8Array.from([0, 1, 2, 3, 4]) },
+      node: { Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] },
       expectedBytes: '0a050001020304',
       expectedForm: `{
-  "Data": "0001020304"
+  "Data": "0001020304",
+  "Links": []
 }`
     })
   })
 
-  // this is excluded from the spec, it must be undefined
   it('Links zero', () => {
     const testCase = {
       node: { Links: [] },
       expectedBytes: '',
-      expectedForm: '{}'
+      expectedForm: `{
+  "Links": []
+}`
     }
-    assert.throws(() => verifyRoundTrip(testCase), /Links/)
-    // bypass straight to encode and it should verify the bytes
-    verifyRoundTrip(testCase, true)
+    verifyRoundTrip(testCase)
   })
 
-  // this is excluded from the spec, it must be undefined
   it('Data some Links zero', () => {
     const testCase = {
       node: { Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] },
       expectedBytes: '0a050001020304',
       expectedForm: `{
-  "Data": "0001020304"
+  "Data": "0001020304",
+  "Links": []
 }`
     }
-    assert.throws(() => verifyRoundTrip(testCase), /Links/)
-    // bypass straight to encode and it should verify the bytes
-    verifyRoundTrip(testCase, true)
+    verifyRoundTrip(testCase)
   })
 
   it('Links empty', () => {

@@ -100,6 +100,8 @@ function create (multiformats) {
     if (node.Links && Array.isArray(node.Links) && node.Links.length) {
       pbn.Links = node.Links.map(asLink)
       pbn.Links.sort(linkComparator)
+    } else {
+      pbn.Links = []
     }
 
     return pbn
@@ -130,16 +132,8 @@ function create (multiformats) {
       throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
     }
 
-    if (node.Links === undefined) {
-      return
-    }
-
     if (!Array.isArray(node.Links)) {
       throw new TypeError('Invalid DAG-PB form (Links must be an array)')
-    }
-
-    if (!node.Links.length) {
-      throw new TypeError('Invalid DAG-PB form (empty Links array must be omitted)')
     }
 
     for (let i = 0; i < node.Links.length; i++) {

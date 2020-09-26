@@ -12,7 +12,8 @@ Block.multiformats.add(dagPB)
 
 async function run () {
   const b1 = Block.encoder({
-    Data: new TextEncoder().encode('Some data as a string')
+    Data: new TextEncoder().encode('Some data as a string'),
+    Links: []
   }, 'dag-pb')
 
   // also possible if `prepare()` is extracted, see API details in README
@@ -55,7 +56,7 @@ const { CID } = multiformats
 const { prepare } = dagPB(multiformats)
 
 console.log(prepare({ Data: 'some data' }))
-// ->{ Data: Uint8Array(9) [115, 111, 109, 101, 32, 100,  97, 116, 97] }
+// ->{ Data: Uint8Array(9) [115, 111, 109, 101, 32, 100,  97, 116, 97], Links: [] }
 console.log(prepare({ Links: [CID.from('bafkqabiaaebagba')] }))
 // -> { Links: [ { Hash: CID(bafkqabiaaebagba) } ] }
 
@@ -69,7 +70,7 @@ Some features of `prepare()`:
 * Strings are converted to `{ Data: bytes }` (as are `Uint8Array`s)
 * Multiple ways of finding CIDs in the `Links` array are attempted, including interpreting the whole link element as a CID, reading a `Uint8Array` as a CID
 * Ensuring that properties are of the correct type (link `Name` is a `string` and `Tsize` is a `number`)
-* Empty `Links` arrays are omitted
+* `Links` array is always present, even if empty
 * `Links` array is properly sorted
 
 ## License

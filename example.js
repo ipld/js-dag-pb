@@ -5,7 +5,8 @@ Block.multiformats.add(dagPB)
 
 async function run () {
   const b1 = Block.encoder({
-    Data: new TextEncoder().encode('Some data as a string')
+    Data: new TextEncoder().encode('Some data as a string'),
+    Links: []
   }, 'dag-pb')
 
   // also possible if `prepare()` is extracted, see API details in README

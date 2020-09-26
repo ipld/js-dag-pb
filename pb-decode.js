@@ -109,7 +109,7 @@ function decodeLink (bytes) {
 function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
-  let links
+  const links = []
   let data
 
   while (index < l) {
@@ -133,9 +133,6 @@ function decodeNode (bytes) {
 
       let byts
       ;[byts, index] = decodeBytes(bytes, index)
-      if (!links) {
-        links = []
-      }
       links.push(decodeLink(byts))
     } else {
       throw new Error(`protobuf: (PBNode) invalid fieldNumber, expected 1 or 2, got ${fieldNum}`)
@@ -151,9 +148,7 @@ function decodeNode (bytes) {
   if (data) {
     node.Data = data
   }
-  if (links) {
-    node.Links = links
-  }
+  node.Links = links
   return node
 }
 

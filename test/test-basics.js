@@ -30,7 +30,7 @@ function linkCidsToStrings (links) {
 describe('Basics', () => {
   it('prepare & encode an empty node', () => {
     const prepared = prepare({})
-    assert.deepEqual(prepared, {})
+    assert.deepEqual(prepared, { Links: [] })
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
     assert.strictEqual(result.length, 0)
@@ -39,7 +39,7 @@ describe('Basics', () => {
   it('prepare & encode a node with data', () => {
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     const prepared = prepare({ Data: data })
-    assert.deepEqual(prepared, { Data: data })
+    assert.deepEqual(prepared, { Data: data, Links: [] })
     const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
@@ -77,7 +77,7 @@ describe('Basics', () => {
 
   it('ignore invalid properties when preparing', () => {
     const prepared = prepare({ foo: 'bar' })
-    assert.deepEqual(prepared, {})
+    assert.deepEqual(prepared, { Links: [] })
     const result = encode(prepared)
     assert.strictEqual(result.length, 0)
   })
@@ -85,7 +85,7 @@ describe('Basics', () => {
   it('prepare & create a node with string data', () => {
     const data = 'some data'
     const prepared = prepare({ Data: data })
-    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data) })
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
     const serialized = encode(prepared)
     const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
@@ -94,7 +94,7 @@ describe('Basics', () => {
   it('prepare & create a node with bare string', () => {
     const data = 'some data'
     const prepared = prepare(data)
-    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data) })
+    assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
     const serialized = encode(prepared)
     const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
@@ -220,22 +220,22 @@ describe('Basics', () => {
   it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
     const reconstituted = decode(encode(prepare(node)))
-    assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello') })
+    assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello'), Links: [] })
   })
 
   it('prepare & create an empty node', () => {
     const node = new Uint8Array(0)
     const prepared = prepare(node)
-    assert.deepEqual(prepared, { Data: new Uint8Array(0) })
+    assert.deepEqual(prepared, { Data: new Uint8Array(0), Links: [] })
     const reconstituted = decode(encode(prepared))
-    assert.deepEqual(reconstituted, { Data: new Uint8Array(0) })
+    assert.deepEqual(reconstituted, { Data: new Uint8Array(0), Links: [] })
   })
 
   it('prepare & create an empty node from object', () => {
     const prepared = prepare({})
-    assert.deepEqual(prepared, {})
+    assert.deepEqual(prepared, { Links: [] })
     const reconstituted = decode(encode(prepared))
-    assert.deepEqual(reconstituted, {})
+    assert.deepEqual(reconstituted, { Links: [] })
   })
 
   it('fail to prepare & create a node with other data types', () => {

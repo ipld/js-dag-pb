@@ -22,9 +22,9 @@ describe('Forms (Data Model)', () => {
       assert.instanceOf(byts, Uint8Array)
     }
 
-    doesntThrow({})
+    doesntThrow({ Links: [] })
 
-    doesntThrow({ Data: Uint8Array.from([1, 2, 3]) })
+    doesntThrow({ Data: Uint8Array.from([1, 2, 3]), Links: [] })
     doesntThrow({
       Links: [
         { Hash: acid },
@@ -53,21 +53,20 @@ describe('Forms (Data Model)', () => {
       throws(bad)
     }
 
+    throws({})
     throws({ Data: null, Links: null })
-    throws({ Data: null })
+    throws({ Data: null, Links: [] })
     throws({ Links: null })
 
-    // empty links array not allowed, should be null
-    throws({ Links: [] })
     // empty link
     throws({ Links: [{}] })
 
-    throws({ Hash: acid, extraneous: true })
+    throws({ Data: acid.bytes, extraneous: true })
     throws({ Links: [{ Hash: acid, extraneous: true }] })
 
     // bad Data forms
     for (const bad of [true, false, 0, 101, -101, 'blip', Infinity, Symbol.for('boop'), []]) {
-      throws({ Data: bad })
+      throws({ Data: bad, Links: [] })
     }
 
     // bad Link array forms
