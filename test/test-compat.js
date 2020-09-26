@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-// tests mirrored in go-merkledag/pb/forms_test.go
+// tests mirrored in go-merkledag/pb/compat_test.go
 
 import chai from 'chai'
 import dagPB from '@ipld/dag-pb'
@@ -279,13 +279,13 @@ describe('Compatibility', () => {
   // same as above but with a Hash
   it('Links Hash some Tsize some', () => {
     verifyRoundTrip({
-      node: { Links: [{ Hash: acid, Tsize: 1010 }] },
-      expectedBytes: '120e0a0901550005000102030418f207',
+      node: { Links: [{ Hash: acid, Tsize: 9007199254740991 }] }, // MAX_SAFE_INTEGER
+      expectedBytes: '12140a0901550005000102030418ffffffffffffff0f',
       expectedForm: `{
   "Links": [
     {
       "Hash": "015500050001020304",
-      "Tsize": 1010
+      "Tsize": 9007199254740991
     }
   ]
 }`
