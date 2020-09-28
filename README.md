@@ -5,29 +5,26 @@ An implementation of the [DAG-PB spec](https://github.com/ipld/specs/blob/master
 ## Example
 
 ```js
-import Block from '@ipld/block/defaults'
+import CID from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
 import dagPB from '@ipld/dag-pb'
 
-Block.multiformats.add(dagPB)
-
 async function run () {
-  const b1 = Block.encoder({
+  const bytes = dagPB.encode({
     Data: new TextEncoder().encode('Some data as a string'),
     Links: []
-  }, 'dag-pb')
+  })
 
-  // also possible if `prepare()` is extracted, see API details in README
-  // const b1 = Block.encoder(prepare('Some data as a string'), 'dag-pb')
-  // const b1 = Block.encoder(prepare(new TextEncoder().encode('Some data as a string')), 'dag-pb')
+  // also possible if you `import dagPB, { prepare } from '@ipld/dag-pb'`
+  // const bytes = dagPB.encode(prepare('Some data as a string'))
+  // const bytes = dagPB.encode(prepare(new TextEncoder().encode('Some data as a string')))
 
-  const cid = await b1.cid()
-  const bytes = b1.encode()
+  const hash = await sha256.digest(bytes)
+  const cid = CID.create(1, dagPB.code, hash)
 
-  console.log(cid, '=>', Block.multiformats.bytes.toHex(bytes))
+  console.log(cid, '=>', Buffer.from(bytes).toString('hex'))
 
-  const b2 = Block.decoder(bytes, 'dag-pb')
-  // or: const b2 = Block.create(bytes, cid)
-  const decoded = b2.decode()
+  const decoded = dagPB.decode(bytes)
 
   console.log(decoded)
   console.log(`decoded "Data": ${new TextDecoder().decode(decoded.Data)}`)
@@ -50,17 +47,13 @@ The DAG-PB encoding is very strict about the Data Model forms that are passed in
 Due to this strictness, a `prepare()` function is made available which simplifies construction and allows for more flexible input forms. Prior to encoding objects, call `prepare()` to receive a new object that strictly conforms to the schema.
 
 ```js
-import multiformats from 'multiformats/basics'
-import dagPB from '@ipld/dag-pb'
-const { CID } = multiformats
-const { prepare } = dagPB(multiformats)
+import CID from 'multiformats/cid'
+import { prepare } from '@ipld/dag-pb'
 
 console.log(prepare({ Data: 'some data' }))
-// ->{ Data: Uint8Array(9) [115, 111, 109, 101, 32, 100,  97, 116, 97], Links: [] }
-console.log(prepare({ Links: [CID.from('bafkqabiaaebagba')] }))
+// ->{ Data: Uint8Array(9) [115, 111, 109, 101, 32, 100,  97, 116, 97] }
+console.log(prepare({ Links: [CID.parse('bafkqabiaaebagba')] }))
 // -> { Links: [ { Hash: CID(bafkqabiaaebagba) } ] }
-
-// ... pass the result of `prepare()` to the encoder to generate a DAG-PB block
 ```
 
 Some features of `prepare()`:

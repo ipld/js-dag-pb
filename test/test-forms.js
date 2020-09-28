@@ -1,24 +1,18 @@
 /* eslint-env mocha */
 
 import chai from 'chai'
-import dagPB from '@ipld/dag-pb'
-import multiformats from 'multiformats/basics'
+import CID from 'multiformats/cid'
+import dagPB, { validate } from '@ipld/dag-pb'
 
 const { assert } = chai
 
-const { multicodec } = multiformats
-multicodec.add(dagPB)
-
-const encode = (v) => multicodec.encode(v, 'dag-pb')
-const { validate } = dagPB(multiformats)
-
-const acid = multiformats.CID.from('bafkqabiaaebagba')
+const acid = CID.parse('bafkqabiaaebagba')
 
 describe('Forms (Data Model)', () => {
   it('validate good forms', () => {
     const doesntThrow = (good) => {
       validate(good)
-      const byts = encode(good)
+      const byts = dagPB.encode(good)
       assert.instanceOf(byts, Uint8Array)
     }
 
@@ -46,7 +40,7 @@ describe('Forms (Data Model)', () => {
   it('validate fails bad forms', () => {
     const throws = (bad) => {
       assert.throws(() => validate(bad))
-      assert.throws(() => encode(bad))
+      assert.throws(() => dagPB.encode(bad))
     }
 
     for (const bad of [true, false, null, 0, 101, -101, 'blip', [], Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {
