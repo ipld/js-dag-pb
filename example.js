@@ -1,26 +1,23 @@
-import Block from '@ipld/block/defaults'
+import CID from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
 import dagPB from '@ipld/dag-pb'
 
-Block.multiformats.add(dagPB)
-
 async function run () {
-  const b1 = Block.encoder({
+  const bytes = dagPB.encode({
     Data: new TextEncoder().encode('Some data as a string'),
     Links: []
-  }, 'dag-pb')
+  })
 
-  // also possible if `prepare()` is extracted, see API details in README
-  // const b1 = Block.encoder(prepare('Some data as a string'), 'dag-pb')
-  // const b1 = Block.encoder(prepare(new TextEncoder().encode('Some data as a string')), 'dag-pb')
+  // also possible if you `import dagPB, { prepare } from '@ipld/dag-pb'`
+  // const bytes = dagPB.encode(prepare('Some data as a string'))
+  // const bytes = dagPB.encode(prepare(new TextEncoder().encode('Some data as a string')))
 
-  const cid = await b1.cid()
-  const bytes = b1.encode()
+  const hash = await sha256.digest(bytes)
+  const cid = CID.create(1, dagPB.code, hash)
 
-  console.log(cid, '=>', Block.multiformats.bytes.toHex(bytes))
+  console.log(cid, '=>', Buffer.from(bytes).toString('hex'))
 
-  const b2 = Block.decoder(bytes, 'dag-pb')
-  // or: const b2 = Block.create(bytes, cid)
-  const decoded = b2.decode()
+  const decoded = dagPB.decode(bytes)
 
   console.log(decoded)
   console.log(`decoded "Data": ${new TextDecoder().decode(decoded.Data)}`)

@@ -1,13 +1,10 @@
 /* eslint-env mocha */
 
 import chai from 'chai'
-// import encodeNode from '../pb-encode.js'
+import { bytes } from 'multiformats'
 import decodeNode from '../pb-decode.js'
-import multiformats from 'multiformats/basics'
 
-const { bytes } = multiformats
 const { assert } = chai
-// const acidBytes = Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4])
 
 describe('Protobuf format', () => {
   describe('PBNode', () => {

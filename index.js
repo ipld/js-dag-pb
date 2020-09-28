@@ -1,3 +1,5 @@
+import { codec } from 'multiformats/codecs/codec'
+import CID from 'multiformats/cid'
 import decodeNode from './pb-decode.js'
 import encodeNode from './pb-encode.js'
 
@@ -34,197 +36,201 @@ function hasOnlyProperties (node, properties) {
   return !Object.keys(node).some((p) => !properties.includes(p))
 }
 
-function create (multiformats) {
-  const { CID, bytes } = multiformats
-
-  const asLink = (link) => {
-    if (typeof link.asCID === 'object') {
-      const Hash = CID.asCID(link)
-      if (!Hash) {
-        throw new TypeError('Invalid DAG-PB form')
-      }
-      return { Hash }
-    }
-
-    if (typeof link !== 'object' || Array.isArray(link)) {
+function asLink (link) {
+  if (typeof link.asCID === 'object') {
+    const Hash = CID.asCID(link)
+    if (!Hash) {
       throw new TypeError('Invalid DAG-PB form')
     }
-
-    const pbl = {}
-
-    if (link.Hash) {
-      let cid
-      try {
-        cid = CID.from(link.Hash)
-      } catch (e) {}
-
-      if (cid) {
-        pbl.Hash = cid
-      }
-    }
-
-    if (!pbl.Hash) {
-      throw new TypeError('Invalid DAG-PB form')
-    }
-
-    if (typeof link.Name === 'string') {
-      pbl.Name = link.Name
-    }
-
-    if (typeof link.Tsize === 'number') {
-      pbl.Tsize = link.Tsize
-    }
-
-    return pbl
+    return { Hash }
   }
 
-  const prepare = (node) => {
-    if (node instanceof Uint8Array || typeof node === 'string') {
-      node = { Data: node }
-    }
-
-    if (typeof node !== 'object' || Array.isArray(node)) {
-      throw new TypeError('Invalid DAG-PB form')
-    }
-
-    const pbn = {}
-
-    if (node.Data) {
-      if (typeof node.Data === 'string') {
-        pbn.Data = textEncoder.encode(node.Data)
-      } else if (node.Data instanceof Uint8Array) {
-        pbn.Data = node.Data
-      }
-    }
-
-    if (node.Links && Array.isArray(node.Links) && node.Links.length) {
-      pbn.Links = node.Links.map(asLink)
-      pbn.Links.sort(linkComparator)
-    } else {
-      pbn.Links = []
-    }
-
-    return pbn
+  if (typeof link !== 'object' || Array.isArray(link)) {
+    throw new TypeError('Invalid DAG-PB form')
   }
 
-  const validate = (node) => {
-    /*
-    type PBLink struct {
-      Hash optional Link
-      Name optional String
-      Tsize optional Int
+  const pbl = {}
+
+  if (link.Hash) {
+    let cid = CID.asCID(link.Hash)
+    try {
+      if (!cid) {
+        if (typeof link.Hash === 'string') {
+          cid = CID.parse(link.Hash)
+        } else if (link.Hash instanceof Uint8Array) {
+          cid = CID.decode(link.Hash)
+        }
+      }
+    } catch (e) {
+      throw new TypeError(`Invalid DAG-PB form: ${e.message}`)
     }
 
-    type PBNode struct {
-      Links [PBLink]
-      Data optional Bytes
-    }
-    */
-    if (!node || typeof node !== 'object' || Array.isArray(node)) {
-      throw new TypeError('Invalid DAG-PB form')
-    }
-
-    if (!hasOnlyProperties(node, pbNodeProperties)) {
-      throw new TypeError('Invalid DAG-PB form (extraneous properties)')
-    }
-
-    if (node.Data !== undefined && !(node.Data instanceof Uint8Array)) {
-      throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
-    }
-
-    if (!Array.isArray(node.Links)) {
-      throw new TypeError('Invalid DAG-PB form (Links must be an array)')
-    }
-
-    for (let i = 0; i < node.Links.length; i++) {
-      const link = node.Links[i]
-      if (!link || typeof link !== 'object' || Array.isArray(link)) {
-        throw new TypeError('Invalid DAG-PB form (bad link object)')
-      }
-
-      if (!hasOnlyProperties(link, pbLinkProperties)) {
-        throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
-      }
-
-      if (!link.Hash) {
-        throw new TypeError('Invalid DAG-PB form (link must have a Hash)')
-      }
-
-      if (link.Hash.asCID !== link.Hash) {
-        throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
-      }
-
-      if (link.Name !== undefined && typeof link.Name !== 'string') {
-        throw new TypeError('Invalid DAG-PB form (link Name must be a string)')
-      }
-
-      if (link.Tsize !== undefined && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
-        throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
-      }
-
-      if (i > 0 && linkComparator(link, node.Links[i - 1]) === -1) {
-        throw new TypeError('Invalid DAG-PB form (links must be sort by Name bytes)')
-      }
+    if (cid) {
+      pbl.Hash = cid
     }
   }
 
-  const encode = (node) => {
-    validate(node)
-    const pbn = {}
-    if (node.Links) {
-      pbn.Links = node.Links.map((l) => {
-        const link = {}
-        if (l.Hash) {
-          link.Hash = l.Hash.bytes // cid -> bytes
-        }
-        if (l.Name !== undefined) {
-          link.Name = l.Name
-        }
-        if (l.Tsize !== undefined) {
-          link.Tsize = l.Tsize
-        }
-        return link
-      })
-    }
-    if (node.Data) {
-      pbn.Data = node.Data
-    }
-    const serialized = encodeNode(pbn)
-    return bytes.coerce(serialized)
+  if (!pbl.Hash) {
+    throw new TypeError('Invalid DAG-PB form')
   }
 
-  const decode = (bytes) => {
-    const pbn = decodeNode(bytes)
-
-    const node = {}
-
-    if (pbn.Data) {
-      node.Data = pbn.Data
-    }
-
-    if (pbn.Links) {
-      node.Links = pbn.Links.map((l) => {
-        const link = {}
-        try {
-          link.Hash = new CID(l.Hash)
-        } catch (e) {}
-        if (!link.Hash) {
-          throw new Error('Invalid Hash field found in link, expected CID')
-        }
-        if (l.Name !== undefined) {
-          link.Name = l.Name
-        }
-        if (l.Tsize !== undefined) {
-          link.Tsize = l.Tsize
-        }
-        return link
-      })
-    }
-
-    return node
+  if (typeof link.Name === 'string') {
+    pbl.Name = link.Name
   }
 
-  return { encode, decode, validate, prepare, code, name }
+  if (typeof link.Tsize === 'number') {
+    pbl.Tsize = link.Tsize
+  }
+
+  return pbl
 }
 
-export default create
+function prepare (node) {
+  if (node instanceof Uint8Array || typeof node === 'string') {
+    node = { Data: node }
+  }
+
+  if (typeof node !== 'object' || Array.isArray(node)) {
+    throw new TypeError('Invalid DAG-PB form')
+  }
+
+  const pbn = {}
+
+  if (node.Data) {
+    if (typeof node.Data === 'string') {
+      pbn.Data = textEncoder.encode(node.Data)
+    } else if (node.Data instanceof Uint8Array) {
+      pbn.Data = node.Data
+    }
+  }
+
+  if (node.Links && Array.isArray(node.Links) && node.Links.length) {
+    pbn.Links = node.Links.map(asLink)
+    pbn.Links.sort(linkComparator)
+  } else {
+    pbn.Links = []
+  }
+
+  return pbn
+}
+
+function validate (node) {
+  /*
+  type PBLink struct {
+    Hash optional Link
+    Name optional String
+    Tsize optional Int
+  }
+
+  type PBNode struct {
+    Links [PBLink]
+    Data optional Bytes
+  }
+  */
+  if (!node || typeof node !== 'object' || Array.isArray(node)) {
+    throw new TypeError('Invalid DAG-PB form')
+  }
+
+  if (!hasOnlyProperties(node, pbNodeProperties)) {
+    throw new TypeError('Invalid DAG-PB form (extraneous properties)')
+  }
+
+  if (node.Data !== undefined && !(node.Data instanceof Uint8Array)) {
+    throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
+  }
+
+  if (!Array.isArray(node.Links)) {
+    throw new TypeError('Invalid DAG-PB form (Links must be an array)')
+  }
+
+  for (let i = 0; i < node.Links.length; i++) {
+    const link = node.Links[i]
+    if (!link || typeof link !== 'object' || Array.isArray(link)) {
+      throw new TypeError('Invalid DAG-PB form (bad link object)')
+    }
+
+    if (!hasOnlyProperties(link, pbLinkProperties)) {
+      throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
+    }
+
+    if (!link.Hash) {
+      throw new TypeError('Invalid DAG-PB form (link must have a Hash)')
+    }
+
+    if (link.Hash.asCID !== link.Hash) {
+      throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
+    }
+
+    if (link.Name !== undefined && typeof link.Name !== 'string') {
+      throw new TypeError('Invalid DAG-PB form (link Name must be a string)')
+    }
+
+    if (link.Tsize !== undefined && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
+      throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
+    }
+
+    if (i > 0 && linkComparator(link, node.Links[i - 1]) === -1) {
+      throw new TypeError('Invalid DAG-PB form (links must be sort by Name bytes)')
+    }
+  }
+}
+
+function encode (node) {
+  validate(node)
+
+  const pbn = {}
+  if (node.Links) {
+    pbn.Links = node.Links.map((l) => {
+      const link = {}
+      if (l.Hash) {
+        link.Hash = l.Hash.bytes // cid -> bytes
+      }
+      if (l.Name !== undefined) {
+        link.Name = l.Name
+      }
+      if (l.Tsize !== undefined) {
+        link.Tsize = l.Tsize
+      }
+      return link
+    })
+  }
+  if (node.Data) {
+    pbn.Data = node.Data
+  }
+
+  return encodeNode(pbn)
+}
+
+function decode (bytes) {
+  const pbn = decodeNode(bytes)
+
+  const node = {}
+
+  if (pbn.Data) {
+    node.Data = pbn.Data
+  }
+
+  if (pbn.Links) {
+    node.Links = pbn.Links.map((l) => {
+      const link = {}
+      try {
+        link.Hash = CID.decode(l.Hash)
+      } catch (e) {}
+      if (!link.Hash) {
+        throw new Error('Invalid Hash field found in link, expected CID')
+      }
+      if (l.Name !== undefined) {
+        link.Name = l.Name
+      }
+      if (l.Tsize !== undefined) {
+        link.Tsize = l.Tsize
+      }
+      return link
+    })
+  }
+
+  return node
+}
+
+export default codec({ name, code, encode, decode })
+export { prepare, validate }
