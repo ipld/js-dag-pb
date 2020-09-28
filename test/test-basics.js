@@ -2,20 +2,13 @@
 
 import chai from 'chai'
 import chaiSubset from 'chai-subset'
-import dagPB from '@ipld/dag-pb'
-import multiformats from 'multiformats/basics'
-import base58 from 'multiformats/bases/base58'
+import { bytes } from 'multiformats'
+import CID from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import dagPB, { prepare } from '@ipld/dag-pb'
 
 chai.use(chaiSubset)
 const { assert } = chai
-
-const { CID, multicodec, multibase, bytes } = multiformats
-multibase.add(base58)
-multicodec.add(dagPB)
-
-const encode = (v) => multicodec.encode(v, 'dag-pb')
-const decode = (v) => multicodec.decode(v, 'dag-pb')
-const { prepare } = dagPB(multiformats)
 
 function linkCidsToStrings (links) {
   return links.map((l) => {
@@ -31,7 +24,7 @@ describe('Basics', () => {
   it('prepare & encode an empty node', () => {
     const prepared = prepare({})
     assert.deepEqual(prepared, { Links: [] })
-    const result = encode(prepared)
+    const result = dagPB.encode(prepared)
     assert.instanceOf(result, Uint8Array)
     assert.strictEqual(result.length, 0)
   })
@@ -40,45 +33,45 @@ describe('Basics', () => {
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     const prepared = prepare({ Data: data })
     assert.deepEqual(prepared, { Data: data, Links: [] })
-    const result = encode(prepared)
+    const result = dagPB.encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = decode(result)
+    const node = dagPB.decode(result)
     assert.deepEqual(node.Data, data)
   })
 
   it('prepare & encode a node with links', () => {
     const links = [
-      { Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
+      { Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
     ]
     const prepared = prepare({ Links: links })
     assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
-    const result = encode(prepared)
+    const result = dagPB.encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = decode(result)
+    const node = dagPB.decode(result)
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings([{
-      Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
+      Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]))
   })
 
   it('prepare & encode a node with links as plain objects', () => {
     const links = [{
-      Hash: CID.from('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
+      Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]
     const prepared = prepare({ Links: links })
     assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
-    const result = encode(prepared)
+    const result = dagPB.encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = decode(result)
+    const node = dagPB.decode(result)
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings(links))
   })
 
   it('ignore invalid properties when preparing', () => {
     const prepared = prepare({ foo: 'bar' })
     assert.deepEqual(prepared, { Links: [] })
-    const result = encode(prepared)
+    const result = dagPB.encode(prepared)
     assert.strictEqual(result.length, 0)
   })
 
@@ -86,8 +79,8 @@ describe('Basics', () => {
     const data = 'some data'
     const prepared = prepare({ Data: data })
     assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
-    const serialized = encode(prepared)
-    const deserialized = decode(serialized)
+    const serialized = dagPB.encode(prepared)
+    const deserialized = dagPB.decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
@@ -95,19 +88,19 @@ describe('Basics', () => {
     const data = 'some data'
     const prepared = prepare(data)
     assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
-    const serialized = encode(prepared)
-    const deserialized = decode(serialized)
+    const serialized = dagPB.encode(prepared)
+    const deserialized = dagPB.decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
   it('prepare & create a node with links (& sorting)', () => {
     const origLinks = [{
       Name: 'some other link',
-      Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39V'),
+      Hash: CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39V'),
       Tsize: 8
     }, {
       Name: 'some link',
-      Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'),
+      Hash: CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'),
       Tsize: 100000000
     }]
 
@@ -125,7 +118,10 @@ describe('Basics', () => {
       'some link',
       'some other link'
     ])
-    const reconstituted = decode(encode(prepared))
+    const byts = dagPB.encode(prepared)
+    const expectedBytes = '12340a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f431209736f6d65206c696e6b1880c2d72f12370a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f44120f736f6d65206f74686572206c696e6b18080a09736f6d652064617461'
+    assert.strictEqual(bytes.toHex(byts), expectedBytes)
+    const reconstituted = dagPB.decode(byts)
 
     // check sorting
     assert.deepEqual(reconstituted.Links.map((l) => l.Name), [
@@ -137,54 +133,54 @@ describe('Basics', () => {
   it('prepare & create a node with stable sorted links', () => {
     const links = [{
       Name: '',
-      Hash: CID.from('QmUGhP2X8xo9dsj45vqx1H6i5WqPqLqmLQsHTTxd3ke8mp'),
+      Hash: CID.parse('QmUGhP2X8xo9dsj45vqx1H6i5WqPqLqmLQsHTTxd3ke8mp'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmP7SrR76KHK9A916RbHG1ufy2TzNABZgiE23PjZDMzZXy'),
+      Hash: CID.parse('QmP7SrR76KHK9A916RbHG1ufy2TzNABZgiE23PjZDMzZXy'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmQg1v4o9xdT3Q14wh4S7dxZkDjyZ9ssFzFzyep1YrVJBY'),
+      Hash: CID.parse('QmQg1v4o9xdT3Q14wh4S7dxZkDjyZ9ssFzFzyep1YrVJBY'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmdP6fartWRrydZCUjHgrJ4XpxSE4SAoRsWJZ1zJ4MWiuf'),
+      Hash: CID.parse('QmdP6fartWRrydZCUjHgrJ4XpxSE4SAoRsWJZ1zJ4MWiuf'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmNNjUStxtMC1WaSZYiDW6CmAUrvd5Q2e17qnxPgVdwrwW'),
+      Hash: CID.parse('QmNNjUStxtMC1WaSZYiDW6CmAUrvd5Q2e17qnxPgVdwrwW'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmWJwqZBJWerHsN1b7g4pRDYmzGNnaMYuD3KSbnpaxsB2h'),
+      Hash: CID.parse('QmWJwqZBJWerHsN1b7g4pRDYmzGNnaMYuD3KSbnpaxsB2h'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmRXPSdysBS3dbUXe6w8oXevZWHdPQWaR2d3fggNsjvieL'),
+      Hash: CID.parse('QmRXPSdysBS3dbUXe6w8oXevZWHdPQWaR2d3fggNsjvieL'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmTUZAXfws6zrhEksnMqLxsbhXZBQs4FNiarjXSYQqVrjC'),
+      Hash: CID.parse('QmTUZAXfws6zrhEksnMqLxsbhXZBQs4FNiarjXSYQqVrjC'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmNNk7dTdh8UofwgqLNauq6N78DPc6LKK2yBs1MFdx7Mbg'),
+      Hash: CID.parse('QmNNk7dTdh8UofwgqLNauq6N78DPc6LKK2yBs1MFdx7Mbg'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmW5mrJfyqh7B4ywSvraZgnWjS3q9CLiYURiJpCX3aro5i'),
+      Hash: CID.parse('QmW5mrJfyqh7B4ywSvraZgnWjS3q9CLiYURiJpCX3aro5i'),
       Tsize: 262158
     }, {
       Name: '',
-      Hash: CID.from('QmTFHZL5CkgNz19MdPnSuyLAi6AVq9fFp81zmPpaL2amED'),
+      Hash: CID.parse('QmTFHZL5CkgNz19MdPnSuyLAi6AVq9fFp81zmPpaL2amED'),
       Tsize: 262158
     }]
 
     const node = { Data: new TextEncoder().encode('some data'), Links: links }
     const prepared = prepare(node)
     assert.deepEqual(prepared, node)
-    const reconstituted = decode(encode(node))
+    const reconstituted = dagPB.decode(dagPB.encode(node))
 
     // check sorting
     assert.deepEqual(reconstituted.Links.map((l) => l.Hash), links.map(l => l.Hash))
@@ -194,13 +190,13 @@ describe('Basics', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
-        CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
+        CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
       ]
     }
     const expected = { Data: node.Data, Links: [{ Hash: node.Links[0] }] }
     const prepared = prepare(node)
     assert.deepEqual(prepared, expected)
-    const reconstituted = decode(encode(prepared))
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
     assert.deepEqual(reconstituted, expected)
   })
 
@@ -208,18 +204,18 @@ describe('Basics', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
-        { Tsize: 10, Hash: CID.from('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U') }
+        { Tsize: 10, Hash: CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U') }
       ]
     }
     const prepared = prepare(node)
     assert.deepEqual(prepared, node)
-    const reconstituted = decode(encode(prepared))
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
     assert.deepEqual(reconstituted, node)
   })
 
   it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
-    const reconstituted = decode(encode(prepare(node)))
+    const reconstituted = dagPB.decode(dagPB.encode(prepare(node)))
     assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello'), Links: [] })
   })
 
@@ -227,14 +223,14 @@ describe('Basics', () => {
     const node = new Uint8Array(0)
     const prepared = prepare(node)
     assert.deepEqual(prepared, { Data: new Uint8Array(0), Links: [] })
-    const reconstituted = decode(encode(prepared))
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
     assert.deepEqual(reconstituted, { Data: new Uint8Array(0), Links: [] })
   })
 
   it('prepare & create an empty node from object', () => {
     const prepared = prepare({})
     assert.deepEqual(prepared, { Links: [] })
-    const reconstituted = decode(encode(prepared))
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
     assert.deepEqual(reconstituted, { Links: [] })
   })
 
@@ -248,7 +244,7 @@ describe('Basics', () => {
     ]
 
     for (const invalid of invalids) {
-      assert.throws(() => encode(prepare(invalid)), 'Invalid DAG-PB form')
+      assert.throws(() => dagPB.encode(prepare(invalid)), 'Invalid DAG-PB form')
     }
   })
 
@@ -263,7 +259,7 @@ describe('Basics', () => {
     ]
 
     for (const invalid of invalids) {
-      assert.throws(() => encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
+      assert.throws(() => dagPB.encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
     }
   })
 
@@ -281,47 +277,47 @@ describe('Basics', () => {
     const expectedLinks = [
       {
         Name: '',
-        Hash: CID.from('QmSbCgdsX12C4KDw3PDmpBN9iCzS87a5DjgSCoW9esqzXk'),
+        Hash: CID.parse('QmSbCgdsX12C4KDw3PDmpBN9iCzS87a5DjgSCoW9esqzXk'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('Qma4GxWNhywSvWFzPKtEswPGqeZ9mLs2Kt76JuBq9g3fi2'),
+        Hash: CID.parse('Qma4GxWNhywSvWFzPKtEswPGqeZ9mLs2Kt76JuBq9g3fi2'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('QmQfyxyys7a1e3mpz9XsntSsTGc8VgpjPj5BF1a1CGdGNc'),
+        Hash: CID.parse('QmQfyxyys7a1e3mpz9XsntSsTGc8VgpjPj5BF1a1CGdGNc'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('QmSh2wTTZT4N8fuSeCFw7wterzdqbE93j1XDhfN3vQHzDV'),
+        Hash: CID.parse('QmSh2wTTZT4N8fuSeCFw7wterzdqbE93j1XDhfN3vQHzDV'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('QmVXsSVjwxMsCwKRCUxEkGb4f4B98gXVy3ih3v4otvcURK'),
+        Hash: CID.parse('QmVXsSVjwxMsCwKRCUxEkGb4f4B98gXVy3ih3v4otvcURK'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('QmZjhH97MEYwQXzCqSQbdjGDhXWuwW4RyikR24pNqytWLj'),
+        Hash: CID.parse('QmZjhH97MEYwQXzCqSQbdjGDhXWuwW4RyikR24pNqytWLj'),
         Tsize: 45623854
       },
       {
         Name: '',
-        Hash: CID.from('QmRs6U5YirCqC7taTynz3x2GNaHJZ3jDvMVAzaiXppwmNJ'),
+        Hash: CID.parse('QmRs6U5YirCqC7taTynz3x2GNaHJZ3jDvMVAzaiXppwmNJ'),
         Tsize: 32538395
       }
     ]
 
-    const node = decode(testBlockUnnamedLinks)
+    const node = dagPB.decode(testBlockUnnamedLinks)
     assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
-    const hash = await multiformats.multihash.hash(testBlockUnnamedLinks, 'sha2-256')
-    const cid = CID.create(0, dagPB(multiformats).code, hash)
+    const hash = await sha256.digest(testBlockUnnamedLinks)
+    const cid = CID.create(0, dagPB.code, hash)
     assert.strictEqual(cid.toString(), 'QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX')
   })
 
@@ -331,32 +327,32 @@ describe('Basics', () => {
     const expectedLinks = [
       {
         Name: 'audio_only.m4a',
-        Hash: CID.from('QmaUAwAQJNtvUdJB42qNbTTgDpzPYD1qdsKNtctM5i7DGB'),
+        Hash: CID.parse('QmaUAwAQJNtvUdJB42qNbTTgDpzPYD1qdsKNtctM5i7DGB'),
         Tsize: 23319629
       },
       {
         Name: 'chat.txt',
-        Hash: CID.from('QmNVrxbB25cKTRuKg2DuhUmBVEK9NmCwWEHtsHPV6YutHw'),
+        Hash: CID.parse('QmNVrxbB25cKTRuKg2DuhUmBVEK9NmCwWEHtsHPV6YutHw'),
         Tsize: 996
       },
       {
         Name: 'playback.m3u',
-        Hash: CID.from('QmUcjKzDLXBPmB6BKHeKSh6ZoFZjss4XDhMRdLYRVuvVfu'),
+        Hash: CID.parse('QmUcjKzDLXBPmB6BKHeKSh6ZoFZjss4XDhMRdLYRVuvVfu'),
         Tsize: 116
       },
       {
         Name: 'zoom_0.mp4',
-        Hash: CID.from('QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX'),
+        Hash: CID.parse('QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX'),
         Tsize: 306281879
       }
     ]
 
-    const node = decode(testBlockNamedLinks)
+    const node = dagPB.decode(testBlockNamedLinks)
     assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
-    const hash = await multiformats.multihash.hash(testBlockNamedLinks, 'sha2-256')
-    const cid = CID.create(0, dagPB(multiformats).code, hash)
+    const hash = await sha256.digest(testBlockNamedLinks)
+    const cid = CID.create(0, dagPB.code, hash)
     assert.strictEqual(cid.toString(), 'QmbSAC58x1tsuPBAoarwGuTQAgghKvdbKSBC8yp5gKCj5M')
   })
 
@@ -371,9 +367,25 @@ describe('Basics', () => {
     const node = { Data: new TextEncoder().encode('some data'), Links: [link] }
     const prepared = prepare(node)
     assert.strictEqual(prepared.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
-    const reconstituted = decode(encode(prepared))
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
 
     assert.strictEqual(reconstituted.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
+  })
+
+  it('prepare & create with CID string', () => {
+    const linkString = 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U'
+    const link = {
+      Name: 'hello',
+      Tsize: 3,
+      Hash: linkString
+    }
+
+    const node = { Data: new TextEncoder().encode('some data'), Links: [link] }
+    const prepared = prepare(node)
+    assert.strictEqual(prepared.Links[0].Hash.toString(), linkString)
+    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+
+    assert.strictEqual(reconstituted.Links[0].Hash.toString(), linkString)
   })
 
   it('fail to create without hash', () => {
