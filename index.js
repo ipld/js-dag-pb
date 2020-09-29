@@ -170,7 +170,7 @@ function validate (node) {
     }
 
     if (i > 0 && linkComparator(link, node.Links[i - 1]) === -1) {
-      throw new TypeError('Invalid DAG-PB form (links must be sort by Name bytes)')
+      throw new TypeError('Invalid DAG-PB form (links must be sorted by Name bytes)')
     }
   }
 }
