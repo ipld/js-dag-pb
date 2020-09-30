@@ -5,7 +5,7 @@ import chaiSubset from 'chai-subset'
 import { bytes } from 'multiformats'
 import CID from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import dagPB, { prepare } from '@ipld/dag-pb'
+import { encode, decode, code, prepare } from '@ipld/dag-pb'
 
 chai.use(chaiSubset)
 const { assert } = chai
@@ -24,7 +24,7 @@ describe('Basics', () => {
   it('prepare & encode an empty node', () => {
     const prepared = prepare({})
     assert.deepEqual(prepared, { Links: [] })
-    const result = dagPB.encode(prepared)
+    const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
     assert.strictEqual(result.length, 0)
   })
@@ -33,10 +33,10 @@ describe('Basics', () => {
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     const prepared = prepare({ Data: data })
     assert.deepEqual(prepared, { Data: data, Links: [] })
-    const result = dagPB.encode(prepared)
+    const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = dagPB.decode(result)
+    const node = decode(result)
     assert.deepEqual(node.Data, data)
   })
 
@@ -46,10 +46,10 @@ describe('Basics', () => {
     ]
     const prepared = prepare({ Links: links })
     assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
-    const result = dagPB.encode(prepared)
+    const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = dagPB.decode(result)
+    const node = decode(result)
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings([{
       Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]))
@@ -61,17 +61,17 @@ describe('Basics', () => {
     }]
     const prepared = prepare({ Links: links })
     assert.deepEqual(prepared, { Links: [{ Hash: links[0].Hash }] })
-    const result = dagPB.encode(prepared)
+    const result = encode(prepared)
     assert.instanceOf(result, Uint8Array)
 
-    const node = dagPB.decode(result)
+    const node = decode(result)
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings(links))
   })
 
   it('ignore invalid properties when preparing', () => {
     const prepared = prepare({ foo: 'bar' })
     assert.deepEqual(prepared, { Links: [] })
-    const result = dagPB.encode(prepared)
+    const result = encode(prepared)
     assert.strictEqual(result.length, 0)
   })
 
@@ -79,8 +79,8 @@ describe('Basics', () => {
     const data = 'some data'
     const prepared = prepare({ Data: data })
     assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
-    const serialized = dagPB.encode(prepared)
-    const deserialized = dagPB.decode(serialized)
+    const serialized = encode(prepared)
+    const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
@@ -88,8 +88,8 @@ describe('Basics', () => {
     const data = 'some data'
     const prepared = prepare(data)
     assert.deepEqual(prepared, { Data: new TextEncoder().encode(data), Links: [] })
-    const serialized = dagPB.encode(prepared)
-    const deserialized = dagPB.decode(serialized)
+    const serialized = encode(prepared)
+    const deserialized = decode(serialized)
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
@@ -118,10 +118,10 @@ describe('Basics', () => {
       'some link',
       'some other link'
     ])
-    const byts = dagPB.encode(prepared)
+    const byts = encode(prepared)
     const expectedBytes = '12340a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f431209736f6d65206c696e6b1880c2d72f12370a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f44120f736f6d65206f74686572206c696e6b18080a09736f6d652064617461'
     assert.strictEqual(bytes.toHex(byts), expectedBytes)
-    const reconstituted = dagPB.decode(byts)
+    const reconstituted = decode(byts)
 
     // check sorting
     assert.deepEqual(reconstituted.Links.map((l) => l.Name), [
@@ -180,7 +180,7 @@ describe('Basics', () => {
     const node = { Data: new TextEncoder().encode('some data'), Links: links }
     const prepared = prepare(node)
     assert.deepEqual(prepared, node)
-    const reconstituted = dagPB.decode(dagPB.encode(node))
+    const reconstituted = decode(encode(node))
 
     // check sorting
     assert.deepEqual(reconstituted.Links.map((l) => l.Hash), links.map(l => l.Hash))
@@ -196,7 +196,7 @@ describe('Basics', () => {
     const expected = { Data: node.Data, Links: [{ Hash: node.Links[0] }] }
     const prepared = prepare(node)
     assert.deepEqual(prepared, expected)
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
     assert.deepEqual(reconstituted, expected)
   })
 
@@ -209,13 +209,13 @@ describe('Basics', () => {
     }
     const prepared = prepare(node)
     assert.deepEqual(prepared, node)
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
     assert.deepEqual(reconstituted, node)
   })
 
   it('prepare & create a node with bytes only', () => {
     const node = new TextEncoder().encode('hello')
-    const reconstituted = dagPB.decode(dagPB.encode(prepare(node)))
+    const reconstituted = decode(encode(prepare(node)))
     assert.deepEqual(reconstituted, { Data: new TextEncoder().encode('hello'), Links: [] })
   })
 
@@ -223,14 +223,14 @@ describe('Basics', () => {
     const node = new Uint8Array(0)
     const prepared = prepare(node)
     assert.deepEqual(prepared, { Data: new Uint8Array(0), Links: [] })
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
     assert.deepEqual(reconstituted, { Data: new Uint8Array(0), Links: [] })
   })
 
   it('prepare & create an empty node from object', () => {
     const prepared = prepare({})
     assert.deepEqual(prepared, { Links: [] })
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
     assert.deepEqual(reconstituted, { Links: [] })
   })
 
@@ -244,7 +244,7 @@ describe('Basics', () => {
     ]
 
     for (const invalid of invalids) {
-      assert.throws(() => dagPB.encode(prepare(invalid)), 'Invalid DAG-PB form')
+      assert.throws(() => encode(prepare(invalid)), 'Invalid DAG-PB form')
     }
   })
 
@@ -259,7 +259,7 @@ describe('Basics', () => {
     ]
 
     for (const invalid of invalids) {
-      assert.throws(() => dagPB.encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
+      assert.throws(() => encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
     }
   })
 
@@ -312,12 +312,12 @@ describe('Basics', () => {
       }
     ]
 
-    const node = dagPB.decode(testBlockUnnamedLinks)
+    const node = decode(testBlockUnnamedLinks)
     assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
     const hash = await sha256.digest(testBlockUnnamedLinks)
-    const cid = CID.create(0, dagPB.code, hash)
+    const cid = CID.create(0, code, hash)
     assert.strictEqual(cid.toString(), 'QmQqy2SiEkKgr2cw5UbQ93TtLKEMsD8TdcWggR8q9JabjX')
   })
 
@@ -347,12 +347,12 @@ describe('Basics', () => {
       }
     ]
 
-    const node = dagPB.decode(testBlockNamedLinks)
+    const node = decode(testBlockNamedLinks)
     assert.deepEqual(node.Links, expectedLinks)
 
     // not a lot of point to this but we are testing that `code` is correct
     const hash = await sha256.digest(testBlockNamedLinks)
-    const cid = CID.create(0, dagPB.code, hash)
+    const cid = CID.create(0, code, hash)
     assert.strictEqual(cid.toString(), 'QmbSAC58x1tsuPBAoarwGuTQAgghKvdbKSBC8yp5gKCj5M')
   })
 
@@ -367,7 +367,7 @@ describe('Basics', () => {
     const node = { Data: new TextEncoder().encode('some data'), Links: [link] }
     const prepared = prepare(node)
     assert.strictEqual(prepared.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
 
     assert.strictEqual(reconstituted.Links[0].Hash.toString(), 'QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
   })
@@ -383,7 +383,7 @@ describe('Basics', () => {
     const node = { Data: new TextEncoder().encode('some data'), Links: [link] }
     const prepared = prepare(node)
     assert.strictEqual(prepared.Links[0].Hash.toString(), linkString)
-    const reconstituted = dagPB.decode(dagPB.encode(prepared))
+    const reconstituted = decode(encode(prepared))
 
     assert.strictEqual(reconstituted.Links[0].Hash.toString(), linkString)
   })

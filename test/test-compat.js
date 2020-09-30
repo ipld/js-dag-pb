@@ -5,7 +5,7 @@
 import chai from 'chai'
 import { bytes } from 'multiformats'
 import CID from 'multiformats/cid'
-import dagPB from '@ipld/dag-pb'
+import { encode, decode } from '@ipld/dag-pb'
 import encodeNode from '../pb-encode.js'
 import decodeNode from '../pb-decode.js'
 
@@ -15,9 +15,9 @@ const { assert } = chai
 const acid = CID.decode(Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4]))
 
 function verifyRoundTrip (testCase, bypass) {
-  const actualBytes = (bypass ? encodeNode : dagPB.encode)(testCase.node)
+  const actualBytes = (bypass ? encodeNode : encode)(testCase.node)
   assert.strictEqual(bytes.toHex(actualBytes), testCase.expectedBytes)
-  const roundTripNode = (bypass ? decodeNode : dagPB.decode)(actualBytes)
+  const roundTripNode = (bypass ? decodeNode : decode)(actualBytes)
   if (roundTripNode.Data) {
     roundTripNode.Data = bytes.toHex(roundTripNode.Data)
   }
@@ -139,7 +139,7 @@ describe('Compatibility', () => {
     // the failure is on the way in _and_ out, so we have to bypass encode & decode
     verifyRoundTrip(testCase, true)
     // don't bypass decode and check the bad CID test there
-    assert.throws(() => dagPB.decode(bytes.fromHex(testCase.expectedBytes)), /CID/)
+    assert.throws(() => decode(bytes.fromHex(testCase.expectedBytes)), /CID/)
   })
 
   it('Links Hash some', () => {
