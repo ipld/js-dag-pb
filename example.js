@@ -1,6 +1,6 @@
 import CID from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import dagPB from '@ipld/dag-pb'
+import * as dagPB from '@ipld/dag-pb'
 
 async function run () {
   const bytes = dagPB.encode({

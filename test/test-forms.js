@@ -2,7 +2,7 @@
 
 import chai from 'chai'
 import CID from 'multiformats/cid'
-import dagPB, { validate } from '@ipld/dag-pb'
+import { encode, validate } from '@ipld/dag-pb'
 
 const { assert } = chai
 
@@ -12,7 +12,7 @@ describe('Forms (Data Model)', () => {
   it('validate good forms', () => {
     const doesntThrow = (good) => {
       validate(good)
-      const byts = dagPB.encode(good)
+      const byts = encode(good)
       assert.instanceOf(byts, Uint8Array)
     }
 
@@ -40,7 +40,7 @@ describe('Forms (Data Model)', () => {
   it('validate fails bad forms', () => {
     const throws = (bad) => {
       assert.throws(() => validate(bad))
-      assert.throws(() => dagPB.encode(bad))
+      assert.throws(() => encode(bad))
     }
 
     for (const bad of [true, false, null, 0, 101, -101, 'blip', [], Infinity, Symbol.for('boop'), Uint8Array.from([1, 2, 3])]) {

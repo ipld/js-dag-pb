@@ -1,4 +1,3 @@
-import { codec } from 'multiformats/codecs/codec'
 import CID from 'multiformats/cid'
 import decodeNode from './pb-decode.js'
 import encodeNode from './pb-encode.js'
@@ -232,5 +231,4 @@ function decode (bytes) {
   return node
 }
 
-export default codec({ name, code, encode, decode })
-export { prepare, validate }
+export { name, code, encode, decode, prepare, validate }
