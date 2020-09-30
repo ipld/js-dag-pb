@@ -93,7 +93,7 @@ describe('Basics', () => {
     assert.deepEqual(deserialized.Data, new TextEncoder().encode('some data'))
   })
 
-  it.only('prepare & create a node with links (& sorting)', () => {
+  it('prepare & create a node with links (& sorting)', () => {
     const origLinks = [{
       Name: 'some other link',
       Hash: CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39V'),
@@ -120,8 +120,8 @@ describe('Basics', () => {
     ])
     const byts = dagPB.encode(prepared)
     const expectedBytes = '12340a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f431209736f6d65206c696e6b1880c2d72f12370a2212208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f44120f736f6d65206f74686572206c696e6b18080a09736f6d652064617461'
-    assert.strictEqual(byts, expectedBytes)
-    const reconstituted = dagPB.decode(bytes)
+    assert.strictEqual(bytes.toHex(byts), expectedBytes)
+    const reconstituted = dagPB.decode(byts)
 
     // check sorting
     assert.deepEqual(reconstituted.Links.map((l) => l.Name), [
