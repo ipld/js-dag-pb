@@ -190,10 +190,10 @@ describe('Basics', () => {
     const node = {
       Data: new TextEncoder().encode('hello'),
       Links: [
-        CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U')
+        { Tsize: 5, Hash: CID.parse('QmXg9Pp2ytZ14xgmQjYEiHjVjMFXzCVVEcRTWJBmLgR39U') }
       ]
     }
-    const expected = { Data: node.Data, Links: [{ Hash: node.Links[0] }] }
+    const expected = { Data: node.Data, Links: [...node.Links] }
     const prepared = prepare(node)
     assert.deepEqual(prepared, expected)
     const reconstituted = decode(encode(prepared))

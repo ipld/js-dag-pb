@@ -2,9 +2,14 @@ const textEncoder = new TextEncoder()
 const maxInt32 = 2 ** 32
 const maxUInt32 = 2 ** 31
 
-// the encoders work backward from the end of the bytes array
-// encodeLink() is passed a slice of the parent byte array that ends where this
-// link needs to end, so it packs to the right-most part of the passed `bytes`
+/**
+ * the encoders work backward from the end of the bytes array
+ * encodeLink() is passed a slice of the parent byte array that ends where this
+ * link needs to end, so it packs to the right-most part of the passed `bytes`
+ *
+ * @param {import('./index').PBLink} link
+ * @param {Uint8Array} bytes
+ */
 function encodeLink (link, bytes) {
   let i = bytes.length
 
@@ -37,7 +42,11 @@ function encodeLink (link, bytes) {
   return bytes.length - i
 }
 
-// encodes a PBNode into a new byte array of precisely the correct size
+/**
+ * encodes a PBNode into a new byte array of precisely the correct size
+ *
+ * @param {import('./index').PBNode} node
+ */
 function encodeNode (node) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
@@ -62,7 +71,11 @@ function encodeNode (node) {
   return bytes
 }
 
-// work out exactly how many bytes this link takes up
+/**
+ * work out exactly how many bytes this link takes up
+ *
+ * @param {import('./index').PBLink} link
+ */
 function sizeLink (link) {
   let n = 0
 
@@ -83,7 +96,11 @@ function sizeLink (link) {
   return n
 }
 
-// work out exactly how many bytes this node takes up
+/**
+ * work out exactly how many bytes this node takes up
+ *
+ * @param {import('./index').PBNode} node
+ */
 function sizeNode (node) {
   let n = 0
 
@@ -102,6 +119,11 @@ function sizeNode (node) {
   return n
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ * @param {number} v
+ */
 function encodeVarint (bytes, offset, v) {
   offset -= sov(v)
   const base = offset
@@ -121,7 +143,11 @@ function encodeVarint (bytes, offset, v) {
   return base
 }
 
-// size of varint
+/**
+ * size of varint
+ *
+ * @param {number} x
+ */
 function sov (x) {
   if (x % 2 === 0) {
     x++
@@ -129,7 +155,11 @@ function sov (x) {
   return Math.floor((len64(x) + 6) / 7)
 }
 
-// golang math/bits, how many bits does it take to represent this integer?
+/**
+ * golang math/bits, how many bits does it take to represent this integer?
+ *
+ * @param {number} x
+ */
 function len64 (x) {
   let n = 0
   if (x >= maxInt32) {

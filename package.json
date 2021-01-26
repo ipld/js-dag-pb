@@ -8,7 +8,10 @@
   },
   "scripts": {
     "lint": "standard",
-    "build": "npm_config_yes=true npx ipjs@latest build --tests",
+    "prepare": "npm run build:types",
+    "build": "npm run build:js && npm run build:types",
+    "build:js": "npm_config_yes=true npx ipjs@latest build --tests",
+    "build:types": "tsc --emitDeclarationOnly --declarationDir dist",
     "publish": "npm_config_yes=true npx ipjs@latest publish",
     "test:cjs": "npm run build && mocha dist/cjs/node-test/test-*.js",
     "test:node": "hundreds mocha test/test-*.js",
@@ -28,14 +31,22 @@
     "c8": "^7.3.1",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
-    "hundreds": "0.0.8",
-    "mocha": "^8.1.3",
+    "hundreds": "0.0.9",
+    "mocha": "^8.2.0",
     "polendina": "^1.1.0",
-    "standard": "^14.3.4"
+    "standard": "^16.0.3",
+    "typescript": "^4.0.3"
   },
   "author": "Rod Vagg <r@va.gg>",
   "keywords": [
     "IPFS",
     "IPLD"
-  ]
+  ],
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  }
 }

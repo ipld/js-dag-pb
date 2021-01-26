@@ -1,5 +1,9 @@
 const textDecoder = new TextDecoder()
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ */
 function decodeVarint (bytes, offset) {
   let v = 0
 
@@ -22,6 +26,10 @@ function decodeVarint (bytes, offset) {
   return [v, offset]
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ */
 function decodeBytes (bytes, offset) {
   let byteLen
   ;[byteLen, offset] = decodeVarint(bytes, offset)
@@ -36,9 +44,16 @@ function decodeBytes (bytes, offset) {
     throw new Error('protobuf: unexpected end of data')
   }
 
-  return [bytes.subarray(offset, postOffset), postOffset]
+  /** @type {[ Uint8Array, number ]} */
+  const output = [bytes.subarray(offset, postOffset), postOffset]
+
+  return output
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} index
+ */
 function decodeKey (bytes, index) {
   let wire
   ;[wire, index] = decodeVarint(bytes, index)
@@ -46,7 +61,11 @@ function decodeKey (bytes, index) {
   return [wire & 0x7, wire >> 3, index]
 }
 
+/**
+ * @param {Uint8Array} bytes
+ */
 function decodeLink (bytes) {
+  /** @type {{ Name: string, Tsize: number, Hash: Uint8Array }} */
   const link = {}
   const l = bytes.length
   let index = 0
@@ -106,6 +125,9 @@ function decodeLink (bytes) {
   return link
 }
 
+/**
+ * @param {Uint8Array} bytes
+ */
 function decodeNode (bytes) {
   const l = bytes.length
   let index = 0

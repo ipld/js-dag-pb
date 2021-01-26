@@ -9,6 +9,18 @@ const pbLinkProperties = ['Hash', 'Name', 'Tsize']
 
 const textEncoder = new TextEncoder()
 
+/**
+ * @typedef {{ Name?: string, Tsize: number, Hash: CID }} DAGLink
+ * @typedef {{ Data: Uint8Array, Links: Array<DAGLink> }} DAGNode
+ *
+ * @typedef {{ Name?: string, Tsize?: number, Hash?: Uint8Array }} PBLink
+ * @typedef {{ Data?: Uint8Array, Links: Array<PBLink> }} PBNode
+ */
+
+/**
+ * @param {DAGLink} a
+ * @param {DAGLink} b
+ */
 function linkComparator (a, b) {
   if (a === b) {
     return 0
@@ -31,23 +43,19 @@ function linkComparator (a, b) {
   return x < y ? -1 : y < x ? 1 : 0
 }
 
+/**
+ *
+ * @param {object} node
+ * @param {Array<string>} properties
+ */
 function hasOnlyProperties (node, properties) {
   return !Object.keys(node).some((p) => !properties.includes(p))
 }
 
+/**
+ * @param {{ Name?: string, Tsize: number, Hash: CID | Uint8Array | string }} link
+ */
 function asLink (link) {
-  if (typeof link.asCID === 'object') {
-    const Hash = CID.asCID(link)
-    if (!Hash) {
-      throw new TypeError('Invalid DAG-PB form')
-    }
-    return { Hash }
-  }
-
-  if (typeof link !== 'object' || Array.isArray(link)) {
-    throw new TypeError('Invalid DAG-PB form')
-  }
-
   const pbl = {}
 
   if (link.Hash) {
@@ -84,15 +92,23 @@ function asLink (link) {
   return pbl
 }
 
+/**
+ * @param {Uint8Array|string|DAGNode} node
+ */
 function prepare (node) {
-  if (node instanceof Uint8Array || typeof node === 'string') {
-    node = { Data: node }
+  if (node instanceof Uint8Array) {
+    node = { Data: node, Links: [] }
+  }
+
+  if (typeof node === 'string') {
+    node = { Data: textEncoder.encode(node), Links: [] }
   }
 
   if (typeof node !== 'object' || Array.isArray(node)) {
     throw new TypeError('Invalid DAG-PB form')
   }
 
+  /** @type DAGNode */
   const pbn = {}
 
   if (node.Data) {
@@ -113,6 +129,9 @@ function prepare (node) {
   return pbn
 }
 
+/**
+ * @param {*} node
+ */
 function validate (node) {
   /*
   type PBLink struct {
@@ -174,6 +193,9 @@ function validate (node) {
   }
 }
 
+/**
+ * @param {DAGNode} node
+ */
 function encode (node) {
   validate(node)
 
@@ -200,6 +222,9 @@ function encode (node) {
   return encodeNode(pbn)
 }
 
+/**
+ * @param {Uint8Array} bytes
+ */
 function decode (bytes) {
   const pbn = decodeNode(bytes)
 
