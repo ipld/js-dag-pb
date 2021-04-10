@@ -2,7 +2,7 @@
 
 import chai from 'chai'
 import { bytes } from 'multiformats'
-import decodeNode from '../pb-decode.js'
+import { decodeNode } from '../src/pb-decode.js'
 
 const { assert } = chai
 

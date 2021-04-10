@@ -4,28 +4,32 @@
 
 import chai from 'chai'
 import { bytes } from 'multiformats'
-import CID from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { encode, decode } from '@ipld/dag-pb'
-import encodeNode from '../pb-encode.js'
-import decodeNode from '../pb-decode.js'
+import { encodeNode } from '../src/pb-encode.js'
+import { decodeNode } from '../src/pb-decode.js'
 
 const { assert } = chai
 
 // Hash is raw+identity 0x0001020304 CID(bafkqabiaaebagba)
 const acid = CID.decode(Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4]))
 
+/**
+ * @param {{node:any, expectedBytes:string, expectedForm:string}} testCase
+ * @param {boolean} [bypass]
+ */
 function verifyRoundTrip (testCase, bypass) {
   const actualBytes = (bypass ? encodeNode : encode)(testCase.node)
   assert.strictEqual(bytes.toHex(actualBytes), testCase.expectedBytes)
   const roundTripNode = (bypass ? decodeNode : decode)(actualBytes)
   if (roundTripNode.Data) {
+    // @ts-ignore this can't be a string, but we're making it so for ease of test
     roundTripNode.Data = bytes.toHex(roundTripNode.Data)
   }
   if (roundTripNode.Links) {
     for (const link of roundTripNode.Links) {
       if (link.Hash) {
-        // they're CIDs which don't stringify well
-        // or consistent with our fixtures
+        // @ts-ignore this can't be a string, but we're making it so for ease of test
         link.Hash = bytes.toHex(bypass ? link.Hash : link.Hash.bytes)
       }
     }

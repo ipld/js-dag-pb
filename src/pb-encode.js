@@ -2,9 +2,24 @@ const textEncoder = new TextEncoder()
 const maxInt32 = 2 ** 32
 const maxUInt32 = 2 ** 31
 
+/**
+ * @typedef {import('./interface').RawPBLink} RawPBLink
+ */
+
+/**
+ * @typedef {import('./interface').RawPBNode} RawPBNode
+ */
+
 // the encoders work backward from the end of the bytes array
-// encodeLink() is passed a slice of the parent byte array that ends where this
-// link needs to end, so it packs to the right-most part of the passed `bytes`
+
+/**
+ * encodeLink() is passed a slice of the parent byte array that ends where this
+ * link needs to end, so it packs to the right-most part of the passed `bytes`
+ *
+ * @param {RawPBLink} link
+ * @param {Uint8Array} bytes
+ * @returns {number}
+ */
 function encodeLink (link, bytes) {
   let i = bytes.length
 
@@ -37,8 +52,13 @@ function encodeLink (link, bytes) {
   return bytes.length - i
 }
 
-// encodes a PBNode into a new byte array of precisely the correct size
-function encodeNode (node) {
+/**
+ * Encodes a PBNode into a new byte array of precisely the correct size
+ *
+ * @param {RawPBNode} node
+ * @returns {Uint8Array}
+ */
+export function encodeNode (node) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
   let i = size
@@ -62,7 +82,12 @@ function encodeNode (node) {
   return bytes
 }
 
-// work out exactly how many bytes this link takes up
+/**
+ * work out exactly how many bytes this link takes up
+ *
+ * @param {RawPBLink} link
+ * @returns
+ */
 function sizeLink (link) {
   let n = 0
 
@@ -83,7 +108,12 @@ function sizeLink (link) {
   return n
 }
 
-// work out exactly how many bytes this node takes up
+/**
+ * Work out exactly how many bytes this node takes up
+ *
+ * @param {RawPBNode} node
+* @returns {number}
+ */
 function sizeNode (node) {
   let n = 0
 
@@ -102,6 +132,12 @@ function sizeNode (node) {
   return n
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ * @param {number} v
+ * @returns {number}
+ */
 function encodeVarint (bytes, offset, v) {
   offset -= sov(v)
   const base = offset
@@ -121,7 +157,12 @@ function encodeVarint (bytes, offset, v) {
   return base
 }
 
-// size of varint
+/**
+ * size of varint
+ *
+ * @param {number} x
+ * @returns {number}
+ */
 function sov (x) {
   if (x % 2 === 0) {
     x++
@@ -129,7 +170,12 @@ function sov (x) {
   return Math.floor((len64(x) + 6) / 7)
 }
 
-// golang math/bits, how many bits does it take to represent this integer?
+/**
+ * golang math/bits, how many bits does it take to represent this integer?
+ *
+ * @param {number} x
+ * @returns {number}
+ */
 function len64 (x) {
   let n = 0
   if (x >= maxInt32) {
@@ -166,5 +212,3 @@ const len8tab = [
   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
 ]
-
-export default encodeNode

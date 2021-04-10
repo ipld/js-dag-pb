@@ -1,14 +1,28 @@
-import CID from 'multiformats/cid'
-import decodeNode from './pb-decode.js'
-import encodeNode from './pb-encode.js'
+import { CID } from 'multiformats/cid'
+import { decodeNode } from './pb-decode.js'
+import { encodeNode } from './pb-encode.js'
 
-const code = 0x70
-const name = 'dag-pb'
+/**
+ * @template {number} Code
+ * @template T
+ * @typedef {import('multiformats/codecs/interface').BlockCodec<Code, T>} BlockCodec
+ */
+
+/**
+ * @typedef {import('./interface').PBLink} PBLink
+ * @typedef {import('./interface').PBNode} PBNode
+ */
+
 const pbNodeProperties = ['Data', 'Links']
 const pbLinkProperties = ['Hash', 'Name', 'Tsize']
 
 const textEncoder = new TextEncoder()
 
+/**
+ * @param {PBLink} a
+ * @param {PBLink} b
+ * @returns {number}
+ */
 function linkComparator (a, b) {
   if (a === b) {
     return 0
@@ -31,10 +45,21 @@ function linkComparator (a, b) {
   return x < y ? -1 : y < x ? 1 : 0
 }
 
+/**
+ * @param {any} node
+ * @param {string[]} properties
+ * @returns {boolean}
+ */
 function hasOnlyProperties (node, properties) {
   return !Object.keys(node).some((p) => !properties.includes(p))
 }
 
+/**
+ * Converts a CID, or a PBLink-like object to a PBLink
+ *
+ * @param {any} link
+ * @returns {PBLink}
+ */
 function asLink (link) {
   if (typeof link.asCID === 'object') {
     const Hash = CID.asCID(link)
@@ -84,7 +109,11 @@ function asLink (link) {
   return pbl
 }
 
-function prepare (node) {
+/**
+ * @param {any} node
+ * @returns {PBNode}
+ */
+export function prepare (node) {
   if (node instanceof Uint8Array || typeof node === 'string') {
     node = { Data: node }
   }
@@ -93,6 +122,7 @@ function prepare (node) {
     throw new TypeError('Invalid DAG-PB form')
   }
 
+  /** @type {PBNode} */
   const pbn = {}
 
   if (node.Data) {
@@ -113,7 +143,10 @@ function prepare (node) {
   return pbn
 }
 
-function validate (node) {
+/**
+ * @param {PBNode} node
+ */
+export function validate (node) {
   /*
   type PBLink struct {
     Hash optional Link
@@ -156,6 +189,7 @@ function validate (node) {
       throw new TypeError('Invalid DAG-PB form (link must have a Hash)')
     }
 
+    // @ts-ignore private property for TS
     if (link.Hash.asCID !== link.Hash) {
       throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
     }
@@ -174,7 +208,11 @@ function validate (node) {
   }
 }
 
-function encode (node) {
+/**
+ * @param {PBNode} node
+ * @returns {Uint8Array}
+ */
+function _encode (node) {
   validate(node)
 
   const pbn = {}
@@ -200,7 +238,11 @@ function encode (node) {
   return encodeNode(pbn)
 }
 
-function decode (bytes) {
+/**
+ * @param {Uint8Array} bytes
+ * @returns {PBNode}
+ */
+function _decode (bytes) {
   const pbn = decodeNode(bytes)
 
   const node = {}
@@ -231,4 +273,13 @@ function decode (bytes) {
   return node
 }
 
-export { name, code, encode, decode, prepare, validate }
+/**
+ * @template T
+ * @type {BlockCodec<0x70, PBNode>}
+ */
+export const { name, code, decode, encode } = {
+  name: 'dag-pb',
+  code: 0x70,
+  encode: _encode,
+  decode: _decode
+}

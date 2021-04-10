@@ -1,15 +1,24 @@
 /* eslint-env mocha */
 
 import chai from 'chai'
+// @ts-ignore
 import chaiSubset from 'chai-subset'
 import { bytes } from 'multiformats'
-import CID from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { encode, decode, code, prepare } from '@ipld/dag-pb'
 
 chai.use(chaiSubset)
 const { assert } = chai
 
+/**
+ * @typedef {import('@ipld/dag-pb').PBLink} PBLink
+ */
+
+/**
+ * @param {PBLink[]} links
+ * @returns
+ */
 function linkCidsToStrings (links) {
   return links.map((l) => {
     return {
@@ -50,6 +59,7 @@ describe('Basics', () => {
     assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
+    // @ts-ignore chaiSubset
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings([{
       Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
     }]))
@@ -65,6 +75,7 @@ describe('Basics', () => {
     assert.instanceOf(result, Uint8Array)
 
     const node = decode(result)
+    // @ts-ignore chaiSubset
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings(links))
   })
 
