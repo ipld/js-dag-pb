@@ -141,8 +141,9 @@ function decodeLink (bytes) {
 export function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
-  /** @type {RawPBLink[]} */
-  const links = []
+  /** @type {RawPBLink[]|void} */
+  let links
+  let linksBeforeData = false
   /** @type {Uint8Array|void} */
   let data
 
@@ -160,11 +161,15 @@ export function decodeNode (bytes) {
       }
 
       ;[data, index] = decodeBytes(bytes, index)
-    } else if (fieldNum === 2) {
-      if (data) {
-        throw new Error('protobuf: (PBNode) invalid order, found Data before Links content')
+      if (links) {
+        linksBeforeData = true
       }
-
+    } else if (fieldNum === 2) {
+      if (linksBeforeData) { // interleaved Links/Dode/Links
+        throw new Error('protobuf: (PBNode) duplicate Links section')
+      } else if (!links) {
+        links = []
+      }
       let byts
       ;[byts, index] = decodeBytes(bytes, index)
       links.push(decodeLink(byts))
@@ -183,6 +188,6 @@ export function decodeNode (bytes) {
   if (data) {
     node.Data = data
   }
-  node.Links = links
+  node.Links = links || []
   return node
 }
