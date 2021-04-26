@@ -1,4 +1,4 @@
-import CID from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { prepare } from '@ipld/dag-pb'
 
 console.log(prepare({ Data: 'some data' }))

@@ -1,5 +1,18 @@
 const textDecoder = new TextDecoder()
 
+/**
+ * @typedef {import('./interface').RawPBLink} RawPBLink
+ */
+
+/**
+ * @typedef {import('./interface').RawPBNode} RawPBNode
+ */
+
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ * @returns {[number, number]}
+ */
 function decodeVarint (bytes, offset) {
   let v = 0
 
@@ -22,6 +35,11 @@ function decodeVarint (bytes, offset) {
   return [v, offset]
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} offset
+ * @returns {[Uint8Array, number]}
+ */
 function decodeBytes (bytes, offset) {
   let byteLen
   ;[byteLen, offset] = decodeVarint(bytes, offset)
@@ -39,6 +57,11 @@ function decodeBytes (bytes, offset) {
   return [bytes.subarray(offset, postOffset), postOffset]
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} index
+ * @returns {[number, number, number]}
+ */
 function decodeKey (bytes, index) {
   let wire
   ;[wire, index] = decodeVarint(bytes, index)
@@ -46,7 +69,12 @@ function decodeKey (bytes, index) {
   return [wire & 0x7, wire >> 3, index]
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @returns {RawPBLink}
+ */
 function decodeLink (bytes) {
+  /** @type {RawPBLink} */
   const link = {}
   const l = bytes.length
   let index = 0
@@ -106,10 +134,16 @@ function decodeLink (bytes) {
   return link
 }
 
-function decodeNode (bytes) {
+/**
+ * @param {Uint8Array} bytes
+ * @returns {RawPBNode}
+ */
+export function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
+  /** @type {RawPBLink[]} */
   const links = []
+  /** @type {Uint8Array|void} */
   let data
 
   while (index < l) {
@@ -144,6 +178,7 @@ function decodeNode (bytes) {
     throw new Error('protobuf: (PBNode) unexpected end of data')
   }
 
+  /** @type {RawPBNode} */
   const node = {}
   if (data) {
     node.Data = data
@@ -151,5 +186,3 @@ function decodeNode (bytes) {
   node.Links = links
   return node
 }
-
-export default decodeNode
