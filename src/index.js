@@ -274,7 +274,6 @@ function _decode (bytes) {
 }
 
 /**
- * @template T
  * @type {BlockCodec<0x70, PBNode>}
  */
 export const { name, code, decode, encode } = {

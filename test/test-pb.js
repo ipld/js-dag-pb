@@ -35,12 +35,6 @@ describe('Protobuf format', () => {
         decodeNode(bytes.fromHex('0a0500010203040a050001020304'))
       }, /PBNode.*duplicate Data/)
     })
-
-    it('Links before Data', () => {
-      assert.throws(() => {
-        decodeNode(bytes.fromHex('0a05000102030412020a00'))
-      }, /PBNode.*Data before Links/)
-    })
   })
 
   describe('PBLink', () => {

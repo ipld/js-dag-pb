@@ -367,6 +367,24 @@ describe('Basics', () => {
     assert.strictEqual(cid.toString(), 'QmbSAC58x1tsuPBAoarwGuTQAgghKvdbKSBC8yp5gKCj5M')
   })
 
+  // Ref: https://github.com/ipld/specs/pull/360
+  // Ref: https://github.com/ipld/go-codec-dagpb/pull/26
+  it('deserialize ancient ipfs block with Data before Links', async () => {
+    const outOfOrderNodeHex = '0a040802180612240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df6512240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df65'
+    const outOfOrderNode = bytes.fromHex(outOfOrderNodeHex)
+    const node = decode(outOfOrderNode) // should not throw
+    console.log('OOO', node)
+    const reencoded = encode(node)
+    // we only care that it's different, i.e. this won't round-trip
+    assert.notStrictEqual(bytes.toHex(reencoded), outOfOrderNodeHex)
+  })
+
+  // this condition is introduced due to the laxity of the above case
+  it('node with data between links', async () => {
+    const doubleLinksNode = bytes.fromHex('12240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df650a040802180612240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df65')
+    assert.throws(() => decode(doubleLinksNode), /PBNode.*duplicate Links section/)
+  })
+
   it('prepare & create with multihash bytes', () => {
     const linkHash = bytes.fromHex('12208ab7a6c5e74737878ac73863cb76739d15d4666de44e5756bf55a2f9e9ab5f43')
     const link = {
