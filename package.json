@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/ipld/js-dag-pb",
   "dependencies": {
-    "multiformats": "^7.0.0"
+    "multiformats": "^8.0.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
