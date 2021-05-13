@@ -3,15 +3,17 @@ import { decodeNode } from './pb-decode.js'
 import { encodeNode } from './pb-encode.js'
 
 /**
- * @template {number} Code
  * @template T
- * @typedef {import('multiformats/codecs/interface').BlockCodec<Code, T>} BlockCodec
+ * @typedef {import('multiformats/codecs/interface').ByteView<T>} ByteView
  */
 
 /**
  * @typedef {import('./interface').PBLink} PBLink
  * @typedef {import('./interface').PBNode} PBNode
  */
+
+export const name = 'dag-pb'
+export const code = 0x70
 
 const pbNodeProperties = ['Data', 'Links']
 const pbLinkProperties = ['Hash', 'Name', 'Tsize']
@@ -210,9 +212,9 @@ export function validate (node) {
 
 /**
  * @param {PBNode} node
- * @returns {Uint8Array}
+ * @returns {ByteView<PBNode>}
  */
-function _encode (node) {
+export function encode (node) {
   validate(node)
 
   const pbn = {}
@@ -239,10 +241,10 @@ function _encode (node) {
 }
 
 /**
- * @param {Uint8Array} bytes
+ * @param {ByteView<PBNode>} bytes
  * @returns {PBNode}
  */
-function _decode (bytes) {
+export function decode (bytes) {
   const pbn = decodeNode(bytes)
 
   const node = {}
@@ -271,14 +273,4 @@ function _decode (bytes) {
   }
 
   return node
-}
-
-/**
- * @type {BlockCodec<0x70, PBNode>}
- */
-export const { name, code, decode, encode } = {
-  name: 'dag-pb',
-  code: 0x70,
-  encode: _encode,
-  decode: _decode
 }
