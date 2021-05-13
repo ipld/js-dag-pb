@@ -8,11 +8,11 @@ const exampleNode:PBNode = { Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] }
 const exampleBytes = [0x0a, 5, 0, 1, 2, 3, 4]
 
 const main = () => {
-  // make sure we have a full CodecFeature
-  useCodecFeature(dagPB)
+  // make sure we have a full codec
+  useCodec(dagPB)
 }
 
-function useCodecFeature (codec: BlockCodec<0x70, any>) {
+function useCodec (codec: BlockCodec<0x70, any>) {
   // use only as a BlockEncoder
   useEncoder(codec)
 
