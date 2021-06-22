@@ -6,7 +6,7 @@ import chaiSubset from 'chai-subset'
 import { bytes } from 'multiformats'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { encode, decode, code, prepare } from '@ipld/dag-pb'
+import { encode, decode, code, prepare, createNode, createLink } from '@ipld/dag-pb'
 
 chai.use(chaiSubset)
 const { assert } = chai
@@ -250,7 +250,7 @@ describe('Basics', () => {
       [],
       true,
       100,
-      () => {},
+      () => { },
       Symbol.for('nope')
     ]
 
@@ -264,13 +264,16 @@ describe('Basics', () => {
       [],
       true,
       100,
-      () => {},
+      () => { },
       Symbol.for('nope'),
       { asCID: {} }
     ]
 
     for (const invalid of invalids) {
       assert.throws(() => encode(prepare({ Links: [invalid] })), 'Invalid DAG-PB form')
+      if (!Array.isArray(invalid)) {
+        assert.throws(() => encode(prepare({ Links: invalid })), 'Invalid DAG-PB form')
+      }
     }
   })
 
@@ -373,7 +376,6 @@ describe('Basics', () => {
     const outOfOrderNodeHex = '0a040802180612240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df6512240a221220cf92fdefcdc34cac009c8b05eb662be0618db9de55ecd42785e9ec6712f8df65'
     const outOfOrderNode = bytes.fromHex(outOfOrderNodeHex)
     const node = decode(outOfOrderNode) // should not throw
-    console.log('OOO', node)
     const reencoded = encode(node)
     // we only care that it's different, i.e. this won't round-trip
     assert.notStrictEqual(bytes.toHex(reencoded), outOfOrderNodeHex)
@@ -423,5 +425,84 @@ describe('Basics', () => {
       Links: [{ Name: 'hello', Tsize: 3 }]
     }
     assert.throws(() => prepare(node), 'Invalid DAG-PB form')
+  })
+})
+
+describe('create*() utility functions', () => {
+  const data = Uint8Array.from([0, 1, 2, 3, 4])
+  const aCid = CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
+  const links = [
+    {
+      Name: 'foo',
+      Hash: CID.parse('QmUGhP2X8xo9dsj45vqx1H6i5WqPqLqmLQsHTTxd3ke8mp'),
+      Tsize: 262158
+    }, {
+      Name: 'boo',
+      Hash: CID.parse('QmP7SrR76KHK9A916RbHG1ufy2TzNABZgiE23PjZDMzZXy'),
+      Tsize: 262158
+    }, {
+      Name: 'yep',
+      Hash: CID.parse('QmQg1v4o9xdT3Q14wh4S7dxZkDjyZ9ssFzFzyep1YrVJBY'),
+      Tsize: 262158
+    }
+  ]
+  const linksSorted = [links[1], links[0], links[2]]
+
+  it('createNode()', () => {
+    assert.deepStrictEqual(createNode(data), { Data: data, Links: [] })
+    assert.deepStrictEqual(createNode(data, []), { Data: data, Links: [] })
+    assert.deepStrictEqual(createNode(data, [links[0]]), { Data: data, Links: [links[0]] })
+    assert.deepStrictEqual(createNode(data, links), { Data: data, Links: linksSorted })
+    // @ts-ignore
+    assert.deepStrictEqual(createNode(), { Links: [] })
+  })
+
+  it('createNode() errors', () => {
+    const invalids = [
+      [],
+      true,
+      100,
+      () => { },
+      Symbol.for('nope')
+    ]
+    for (const invalid of invalids) {
+      // @ts-ignore
+      assert.throws(() => createNode(invalid))
+    }
+  })
+
+  it('createLink()', () => {
+    assert.deepStrictEqual(createLink('foo', 100, aCid), { Hash: aCid, Name: 'foo', Tsize: 100 })
+    for (const l of links) {
+      assert.deepStrictEqual(createLink(l.Name, l.Tsize, l.Hash), l)
+    }
+    // Tsize isn't mandatory
+    // @ts-ignore
+    assert.deepStrictEqual(createLink('foo', undefined, aCid), { Hash: aCid, Name: 'foo' })
+    // neither is Name
+    // @ts-ignore
+    assert.deepStrictEqual(createLink(undefined, undefined, aCid), { Hash: aCid })
+    // but that's not really what this API is for ...
+  })
+
+  it('createNode() errors', () => {
+    const invalids = [
+      undefined,
+      null,
+      [],
+      true,
+      100,
+      () => { },
+      Symbol.for('nope'),
+      {}
+    ]
+    for (const invalid1 of invalids) {
+      for (const invalid2 of invalids) {
+        for (const invalid3 of invalids) {
+          // @ts-ignore
+          assert.throws(() => createLink(invalid1, invalid2, invalid3))
+        }
+      }
+    }
   })
 })
