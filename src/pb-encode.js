@@ -179,7 +179,7 @@ function sov (x) {
 function len64 (x) {
   let n = 0
   if (x >= maxInt32) {
-    x /= maxInt32
+    x = Math.floor(x / maxInt32)
     n = 32
   }
   if (x >= (1 << 16)) {

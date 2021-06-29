@@ -45,4 +45,13 @@ describe('Edge cases', () => {
       encodeNode({ Links: [{ Hash: acidBytes, Name: 'yoik', Tsize: -1 }], Data: new Uint8Array(0) })
     }, /negative/)
   })
+
+  it('encode tsize >=uint32', () => {
+    const node = {
+      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 6779297111 }],
+      Data: new Uint8Array([8, 1])
+    }
+    const encoded = encodeNode(node)
+    assert.deepEqual(decodeNode(encoded), node)
+  })
 })
