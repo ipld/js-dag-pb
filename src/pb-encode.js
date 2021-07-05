@@ -183,11 +183,11 @@ function len64 (x) {
     n = 32
   }
   if (x >= (1 << 16)) {
-    x >>= 16
+    x >>>= 16
     n += 16
   }
   if (x >= (1 << 8)) {
-    x >>= 8
+    x >>>= 8
     n += 8
   }
   return n + len8tab[x]
