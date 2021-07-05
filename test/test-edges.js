@@ -46,93 +46,19 @@ describe('Edge cases', () => {
     }, /negative/)
   })
 
-  it('encode 5gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 5368709120 }],
-      Data: new Uint8Array([8, 1])
+  it('encode awkward tsize values ', () => {
+    // testing len64() to make sure we can properly calculate the encoded length
+    // of various awkward values
+    const cases = [6779297111, 5368709120, 4831838208, 4294967296, 3758096384,
+      3221225472, 2813203579, 2147483648, 1932735283, 1610612736, 1073741824]
+    for (const Tsize of cases) {
+      const node = {
+        Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize }],
+        Data: new Uint8Array([8, 1])
+      }
+      const encoded = encodeNode(node)
+      assert.deepEqual(decodeNode(encoded), node)
+      console.log(Tsize, decodeNode(encoded))
     }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 4.5gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 4831838208 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 4gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 4294967296 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 3.5gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 3758096384 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 3gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 3221225472 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 2.6gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 2813203579 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 2gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 2147483648 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 1.8gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 1932735283 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 1.5gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 1610612736 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
-  })
-
-  it('encode 1gb ', () => {
-    const node = {
-      Links: [{ Hash: acidBytes, Name: 'big.bin', Tsize: 1073741824 }],
-      Data: new Uint8Array([8, 1])
-    }
-    const encoded = encodeNode(node)
-    assert.deepEqual(decodeNode(encoded), node)
   })
 })
