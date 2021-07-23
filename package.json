@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^9.0.0",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "hundreds": "^0.0.9",
