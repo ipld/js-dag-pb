@@ -4,6 +4,12 @@
     "moduleResolution": "node",
     "noImplicitAny": true,
     "skipLibCheck": false,
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ipld/dag-pb": [
+        "../../dist/"
+      ]
+    }
   }
 }
