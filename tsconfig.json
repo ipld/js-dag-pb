@@ -14,29 +14,23 @@
     "strictPropertyInitialization": true,
     "strictBindCallApply": true,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "alwaysStrict": true,
     "esModuleInterop": true,
     "target": "ES2018",
     "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
+    "rootDir": ".",
     "outDir": "types",
     "skipLibCheck": true,
     "stripInternal": true,
     "resolveJsonModule": true,
     "emitDeclarationOnly": true,
-    "baseUrl": ".",
-    "paths": {
-      "@ipld/dag-pb": [
-        "src"
-      ]
-    }
+    "baseUrl": "."
   },
-  "exclude": [
-    "node_modules",
-    "esm",
-    "cjs",
-    "example*.js"
+  "include": [
+    "src"
   ],
   "compileOnSave": false
 }
