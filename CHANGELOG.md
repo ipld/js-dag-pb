@@ -1,3 +1,18 @@
+### [2.1.17](https://github.com/ipld/js-dag-pb/compare/v2.1.16...v2.1.17) (2022-05-25)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump typescript from 4.6.4 to 4.7.2 ([#50](https://github.com/ipld/js-dag-pb/issues/50)) ([756ba25](https://github.com/ipld/js-dag-pb/commit/756ba256749d29978630c2984f4cbccc1c809057))
+* **no-release:** bump actions/checkout from 2.4.0 to 3 ([#42](https://github.com/ipld/js-dag-pb/issues/42)) ([ceee519](https://github.com/ipld/js-dag-pb/commit/ceee519459e427843412dabd7ac78d4f0b5551f0))
+* **no-release:** bump actions/setup-node from 3.0.0 to 3.1.0 ([#43](https://github.com/ipld/js-dag-pb/issues/43)) ([0c4bcb9](https://github.com/ipld/js-dag-pb/commit/0c4bcb9a1587e343325c1694419408d6482fe8f9))
+* **no-release:** bump actions/setup-node from 3.1.0 to 3.1.1 ([#44](https://github.com/ipld/js-dag-pb/issues/44)) ([3c44c80](https://github.com/ipld/js-dag-pb/commit/3c44c8095f2720f1fb4f8a584f6054c163514d35))
+* **no-release:** bump actions/setup-node from 3.1.1 to 3.2.0 ([#49](https://github.com/ipld/js-dag-pb/issues/49)) ([0fa8119](https://github.com/ipld/js-dag-pb/commit/0fa8119e40b18d9954d0e6c8516aac2e28897b1f))
+* **no-release:** bump mocha from 9.2.2 to 10.0.0 ([#47](https://github.com/ipld/js-dag-pb/issues/47)) ([26392b8](https://github.com/ipld/js-dag-pb/commit/26392b8fb6e8e56ea7bd9da11bf9add378d7f9f9))
+* **no-release:** bump polendina from 2.0.15 to 3.0.0 ([#46](https://github.com/ipld/js-dag-pb/issues/46)) ([e38782c](https://github.com/ipld/js-dag-pb/commit/e38782c84cd5f319379a96b0feb722dae4595de4))
+* **no-release:** bump polendina from 3.0.0 to 3.1.0 ([#48](https://github.com/ipld/js-dag-pb/issues/48)) ([1b16aaf](https://github.com/ipld/js-dag-pb/commit/1b16aafdcb6f81276845239dba68846037a81197))
+* **no-release:** bump standard from 16.0.4 to 17.0.0 ([#45](https://github.com/ipld/js-dag-pb/issues/45)) ([c334cad](https://github.com/ipld/js-dag-pb/commit/c334cadffae73338185aa8a111cd0b9ad4e0e6a4))
+
 ### [2.1.16](https://github.com/ipld/js-dag-pb/compare/v2.1.15...v2.1.16) (2022-03-02)
 
 
