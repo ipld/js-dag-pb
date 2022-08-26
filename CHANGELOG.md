@@ -1,3 +1,13 @@
+## [2.1.18](https://github.com/ipld/js-dag-pb/compare/v2.1.17...v2.1.18) (2022-08-26)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump typescript from 4.7.4 to 4.8.2 ([#55](https://github.com/ipld/js-dag-pb/issues/55)) ([770bc6d](https://github.com/ipld/js-dag-pb/commit/770bc6d44d08b081115c780e727da554b8df07cb))
+* **no-release:** bump actions/setup-node from 3.2.0 to 3.3.0 ([#51](https://github.com/ipld/js-dag-pb/issues/51)) ([422f91e](https://github.com/ipld/js-dag-pb/commit/422f91ea722efdd119b25a8c41087ef9a61f2252))
+* **no-release:** bump actions/setup-node from 3.3.0 to 3.4.0 ([#53](https://github.com/ipld/js-dag-pb/issues/53)) ([3f63ff8](https://github.com/ipld/js-dag-pb/commit/3f63ff88a0c2e6838bca6987da0fbb576acd4e19))
+* **no-release:** bump actions/setup-node from 3.4.0 to 3.4.1 ([#54](https://github.com/ipld/js-dag-pb/issues/54)) ([63c6ed2](https://github.com/ipld/js-dag-pb/commit/63c6ed2cbea62b5d09dd105f6263e851e7a54e0f))
+
 ### [2.1.17](https://github.com/ipld/js-dag-pb/compare/v2.1.16...v2.1.17) (2022-05-25)
 
 
