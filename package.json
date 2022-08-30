@@ -153,7 +153,7 @@
     "release": "aegir release",
     "test": "aegir test -t node -t browser -t webworker -t electron-main",
     "test:ts": "npm run test --prefix test/ts-use",
-    "test:node": "aegir test -t node --cov && npm run test:ts",
+    "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
