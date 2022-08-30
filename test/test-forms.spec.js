@@ -1,13 +1,11 @@
 /* eslint-env mocha */
 
-import chai from 'chai'
+import { assert } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
-import { encode, validate } from '@ipld/dag-pb'
-
-const { assert } = chai
+import { encode, validate } from '../src/index.js'
 
 /**
- * @typedef {import('@ipld/dag-pb').PBNode} PBNode
+ * @typedef {import('../src/index.js').PBNode} PBNode
  */
 
 const acid = CID.parse('bafkqabiaaebagba')

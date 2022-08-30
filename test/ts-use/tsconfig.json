@@ -1,15 +1,9 @@
 {
+  "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-    "strict": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "skipLibCheck": false,
-    "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@ipld/dag-pb": [
-        "../../dist/"
-      ]
-    }
-  }
+    "outDir": "dist"
+  },
+  "include": [
+    "src"
+  ]
 }

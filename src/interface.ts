@@ -1,4 +1,4 @@
-import { CID } from 'multiformats/cid'
+import type { CID } from 'multiformats/cid'
 
 /*
   PBNode and PBLink match the DAG-PB logical format, as described at:
@@ -6,13 +6,13 @@ import { CID } from 'multiformats/cid'
 */
 
 export interface PBLink {
-  Name?: string,
-  Tsize?: number,
+  Name?: string
+  Tsize?: number
   Hash: CID
 }
 
 export interface PBNode {
-  Data?: Uint8Array,
+  Data?: Uint8Array
   Links: PBLink[]
 }
 
@@ -22,13 +22,12 @@ export interface PBNode {
 // and PBLink specifics (including CID and optionals).
 
 export interface RawPBLink {
-  Name: string,
-  Tsize: number,
+  Name: string
+  Tsize: number
   Hash: Uint8Array
 }
 
 export interface RawPBNode {
-  Data: Uint8Array,
+  Data: Uint8Array
   Links: RawPBLink[]
 }
-

@@ -1,18 +1,13 @@
 /* eslint-env mocha */
 
-import chai from 'chai'
-// @ts-ignore
-import chaiSubset from 'chai-subset'
+import { assert } from 'aegir/chai'
 import { bytes } from 'multiformats'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { encode, decode, code, prepare, createNode, createLink } from '@ipld/dag-pb'
-
-chai.use(chaiSubset)
-const { assert } = chai
+import { encode, decode, code, prepare, createNode, createLink } from '../src/index.js'
 
 /**
- * @typedef {import('@ipld/dag-pb').PBLink} PBLink
+ * @typedef {import('../src/index.js').PBLink} PBLink
  */
 
 /**
