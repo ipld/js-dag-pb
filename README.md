@@ -8,6 +8,7 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+- [Overview](#overview)
 - [Example](#example)
 - [Usage](#usage)
   - [`prepare()`](#prepare)
@@ -20,6 +21,10 @@
 ```console
 $ npm i @ipld/dag-pb
 ```
+
+## Overview
+
+An implementation of the [DAG-PB spec](https://github.com/ipld/specs/blob/master/block-layer/codecs/dag-pb.md) for JavaScript designed for use with [multiformats](https://github.com/multiformats/js-multiformats) or via the higher-level `Block` abstraction in [@ipld/block](https://github.com/ipld/js-block).
 
 ## Example
 
