@@ -32,7 +32,7 @@
     "import": "./src/index.js"
   },
   "dependencies": {
-    "multiformats": "^9.5.4"
+    "multiformats": "^10.0.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
