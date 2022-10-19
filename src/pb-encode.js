@@ -112,7 +112,7 @@ function sizeLink (link) {
  * Work out exactly how many bytes this node takes up
  *
  * @param {RawPBNode} node
-* @returns {number}
+ * @returns {number}
  */
 function sizeNode (node) {
   let n = 0

@@ -1,4 +1,28 @@
-# @ipld/dag-pb
+# @ipld/dag-pb <!-- omit in toc -->
+
+[![codecov](https://img.shields.io/codecov/c/github/ipld/js-dag-pb.svg?style=flat-square)](https://codecov.io/gh/ipld/js-dag-pb)
+[![CI](https://img.shields.io/github/workflow/status/ipld/js-dag-pb/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/ipld/js-dag-pb/actions/workflows/js-test-and-release.yml)
+
+> JS implementation of DAG-PB
+
+## Table of contents <!-- omit in toc -->
+
+- [Install](#install)
+- [Overview](#overview)
+- [Example](#example)
+- [Usage](#usage)
+  - [`prepare()`](#prepare)
+- [`createNode()` & `createLink()`](#createnode--createlink)
+- [License](#license)
+- [Contribute](#contribute)
+
+## Install
+
+```console
+$ npm i @ipld/dag-pb
+```
+
+## Overview
 
 An implementation of the [DAG-PB spec](https://github.com/ipld/specs/blob/master/block-layer/codecs/dag-pb.md) for JavaScript designed for use with [multiformats](https://github.com/multiformats/js-multiformats) or via the higher-level `Block` abstraction in [@ipld/block](https://github.com/ipld/js-block).
 
@@ -42,7 +66,7 @@ run().catch((err) => {
 
 ### `prepare()`
 
-The DAG-PB encoding is very strict about the Data Model forms that are passed in. The objects _must_ exactly resemble what they would if they were to undergo a round-trip of encode & decode. Therefore, extraneous or mistyped properties are not acceptable and will be rejected. See the [DAG-PB spec](https://github.com/ipld/specs/blob/master/block-layer/codecs/dag-pb.md) for full details of the acceptable schema and additional constraints.
+The DAG-PB encoding is very strict about the Data Model forms that are passed in. The objects *must* exactly resemble what they would if they were to undergo a round-trip of encode & decode. Therefore, extraneous or mistyped properties are not acceptable and will be rejected. See the [DAG-PB spec](https://github.com/ipld/specs/blob/master/block-layer/codecs/dag-pb.md) for full details of the acceptable schema and additional constraints.
 
 Due to this strictness, a `prepare()` function is made available which simplifies construction and allows for more flexible input forms. Prior to encoding objects, call `prepare()` to receive a new object that strictly conforms to the schema.
 
@@ -58,20 +82,20 @@ console.log(prepare({ Links: [CID.parse('bafkqabiaaebagba')] }))
 
 Some features of `prepare()`:
 
-* Extraneous properties are omitted
-* String values for `Data` are converted
-* Strings are converted to `{ Data: bytes }` (as are `Uint8Array`s)
-* Multiple ways of finding CIDs in the `Links` array are attempted, including interpreting the whole link element as a CID, reading a `Uint8Array` as a CID
-* Ensuring that properties are of the correct type (link `Name` is a `string` and `Tsize` is a `number`)
-* `Links` array is always present, even if empty
-* `Links` array is properly sorted
+- Extraneous properties are omitted
+- String values for `Data` are converted
+- Strings are converted to `{ Data: bytes }` (as are `Uint8Array`s)
+- Multiple ways of finding CIDs in the `Links` array are attempted, including interpreting the whole link element as a CID, reading a `Uint8Array` as a CID
+- Ensuring that properties are of the correct type (link `Name` is a `string` and `Tsize` is a `number`)
+- `Links` array is always present, even if empty
+- `Links` array is properly sorted
 
 ## `createNode()` & `createLink()`
 
 These utility exports are available to make transition from the older [ipld-dag-pb](https://github.com/ipld/js-ipld-dag-pb) library which used `DAGNode` and `DAGLink` objects with constructors. `createNode()` mirrors the `new DAGNode()` API while `createLink()` mirrors `new DAGLink()` API.
 
-* `createNode(data: Uint8Array, links: PBLink[]|void): PBNode`: create a correctly formed `PBNode` object from a `Uint8Array` and an optional array of correctly formed `PBLink` objects. The returned object will be suitable for passing to `encode()` and using `prepare()` on it should result in a noop.
-* `createLink(name: string, size: number, cid: CID): PBLink`: create a correctly formed `PBLink` object from a name, size and CID. The returned object will be suitable for attaching to a `PBNode`'s `Links` array, or in an array for the second argument to `createNode()`.
+- `createNode(data: Uint8Array, links: PBLink[]|void): PBNode`: create a correctly formed `PBNode` object from a `Uint8Array` and an optional array of correctly formed `PBLink` objects. The returned object will be suitable for passing to `encode()` and using `prepare()` on it should result in a noop.
+- `createLink(name: string, size: number, cid: CID): PBLink`: create a correctly formed `PBLink` object from a name, size and CID. The returned object will be suitable for attaching to a `PBNode`'s `Links` array, or in an array for the second argument to `createNode()`.
 
 ```js
 import { CID, bytes } from 'multiformats'
@@ -99,35 +123,33 @@ run().catch((err) => console.error(err))
 
 Results in:
 
-```
-{
-  Data: Uint8Array(5) [ 0, 1, 2, 3, 4 ],
-  Links: [
     {
-      Hash: CID(QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe),
-      Name: 'link1',
-      Tsize: 100
-    },
-    {
-      Hash: CID(bafyreifepiu23okq5zuyvyhsoiazv2icw2van3s7ko6d3ixl5jx2yj2yhu),
-      Name: 'link2',
-      Tsize: 200
+      Data: Uint8Array(5) [ 0, 1, 2, 3, 4 ],
+      Links: [
+        {
+          Hash: CID(QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe),
+          Name: 'link1',
+          Tsize: 100
+        },
+        {
+          Hash: CID(bafyreifepiu23okq5zuyvyhsoiazv2icw2van3s7ko6d3ixl5jx2yj2yhu),
+          Name: 'link2',
+          Tsize: 200
+        }
+      ]
     }
-  ]
-}
-CID(bafybeihsp53wkzsaif76mjv564cawzqyjwianosamlvf6sht2m25ttyxiy)
-Encoded: 122d0a2212207521fe19c374a97759226dc5c0c8e674e73950e81b211f7dd3b6b30883a08a511205
-         6c696e6b31186412300a2401711220a47a29adb950ee698ae0f272019ae902b6aa06ee5f53bc3da2
-         ebea6fac27583d12056c696e6b3218c8010a050001020304
-```
+    CID(bafybeihsp53wkzsaif76mjv564cawzqyjwianosamlvf6sht2m25ttyxiy)
+    Encoded: 122d0a2212207521fe19c374a97759226dc5c0c8e674e73950e81b211f7dd3b6b30883a08a511205
+             6c696e6b31186412300a2401711220a47a29adb950ee698ae0f272019ae902b6aa06ee5f53bc3da2
+             ebea6fac27583d12056c696e6b3218c8010a050001020304
 
 ## License
 
 Licensed under either of
 
- * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
- * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-### Contribution
+## Contribute
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

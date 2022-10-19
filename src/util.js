@@ -77,7 +77,7 @@ function asLink (link) {
           cid = CID.decode(link.Hash)
         }
       }
-    } catch (e) {
+    } catch (/** @type {any} */ e) {
       throw new TypeError(`Invalid DAG-PB form: ${e.message}`)
     }
 

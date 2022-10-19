@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
-import { BlockEncoder, BlockDecoder, BlockCodec } from 'multiformats/codecs/interface'
+import type { BlockEncoder, BlockDecoder, BlockCodec } from 'multiformats/codecs/interface'
 import * as dagPB from '@ipld/dag-pb'
-import { PBNode } from '@ipld/dag-pb'
+import type { PBNode } from '@ipld/dag-pb'
 
 const exampleNode:PBNode = { Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] }
 const exampleBytes = [0x0a, 5, 0, 1, 2, 3, 4]

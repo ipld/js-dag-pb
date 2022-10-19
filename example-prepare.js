@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { CID } from 'multiformats/cid'
 import { prepare } from '@ipld/dag-pb'
 

@@ -1,11 +1,10 @@
 /* eslint-env mocha */
 
-import chai from 'chai'
+import { assert } from 'aegir/chai'
 import { bytes } from 'multiformats'
 import { encodeNode } from '../src/pb-encode.js'
 import { decodeNode } from '../src/pb-decode.js'
 
-const { assert } = chai
 const acidBytes = Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4])
 
 describe('Edge cases', () => {

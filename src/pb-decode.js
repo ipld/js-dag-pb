@@ -97,7 +97,7 @@ function decodeLink (bytes) {
         throw new Error('protobuf: (PBLink) invalid order, found Tsize before Hash')
       }
 
-      ;[link.Hash, index] = decodeBytes(bytes, index)
+      [link.Hash, index] = decodeBytes(bytes, index)
     } else if (fieldNum === 2) {
       if (link.Name !== undefined) {
         throw new Error('protobuf: (PBLink) duplicate Name section')
@@ -120,7 +120,7 @@ function decodeLink (bytes) {
         throw new Error(`protobuf: (PBLink) wrong wireType (${wireType}) for Tsize`)
       }
 
-      ;[link.Tsize, index] = decodeVarint(bytes, index)
+      [link.Tsize, index] = decodeVarint(bytes, index)
     } else {
       throw new Error(`protobuf: (PBLink) invalid fieldNumber, expected 1, 2 or 3, got ${fieldNum}`)
     }
@@ -160,7 +160,7 @@ export function decodeNode (bytes) {
         throw new Error('protobuf: (PBNode) duplicate Data section')
       }
 
-      ;[data, index] = decodeBytes(bytes, index)
+      [data, index] = decodeBytes(bytes, index)
       if (links) {
         linksBeforeData = true
       }
