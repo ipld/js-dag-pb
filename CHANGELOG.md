@@ -1,3 +1,21 @@
+## [3.0.0](https://github.com/ipld/js-dag-pb/compare/v2.1.18...v3.0.0) (2022-10-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* publish as esm-only (#56)
+
+### Features
+
+* publish as esm-only ([#56](https://github.com/ipld/js-dag-pb/issues/56)) ([27e1076](https://github.com/ipld/js-dag-pb/commit/27e1076b4161259d8073efa50dbb247e0effecc9))
+
+
+### Trivial Changes
+
+* **no-release:** bump @types/mocha from 9.1.1 to 10.0.0 ([#58](https://github.com/ipld/js-dag-pb/issues/58)) ([6475261](https://github.com/ipld/js-dag-pb/commit/64752610be4cedb8d54c258231625897ab405d9d))
+* **no-release:** bump actions/setup-node from 3.4.1 to 3.5.0 ([#57](https://github.com/ipld/js-dag-pb/issues/57)) ([72521b4](https://github.com/ipld/js-dag-pb/commit/72521b4af008180226acd31002f2aadbb20b73d2))
+* **no-release:** bump actions/setup-node from 3.5.0 to 3.5.1 ([#60](https://github.com/ipld/js-dag-pb/issues/60)) ([eaa7039](https://github.com/ipld/js-dag-pb/commit/eaa7039497e729acb86faadb151ca4b574b8990c))
+
 ## [2.1.18](https://github.com/ipld/js-dag-pb/compare/v2.1.17...v2.1.18) (2022-08-26)
 
 
