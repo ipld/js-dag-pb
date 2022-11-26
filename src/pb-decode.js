@@ -165,7 +165,7 @@ export function decodeNode (bytes) {
         linksBeforeData = true
       }
     } else if (fieldNum === 2) {
-      if (linksBeforeData) { // interleaved Links/Dode/Links
+      if (linksBeforeData) { // interleaved Links/Data/Links
         throw new Error('protobuf: (PBNode) duplicate Links section')
       } else if (!links) {
         links = []
