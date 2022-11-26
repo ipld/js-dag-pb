@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/ipld/js-dag-pb/compare/v3.0.0...v3.0.1) (2022-11-26)
+
+
+### Bug Fixes
+
+* **norelease:** minor comment typo ([#65](https://github.com/ipld/js-dag-pb/issues/65)) ([89722b0](https://github.com/ipld/js-dag-pb/commit/89722b08a76fa02c6fb7ec456c0a251b81bc2da2))
+
 ## [3.0.0](https://github.com/ipld/js-dag-pb/compare/v2.1.18...v3.0.0) (2022-10-19)
 
 
