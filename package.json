@@ -162,7 +162,7 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "multiformats": "^10.0.2"
+    "multiformats": "^11.0.0"
   },
   "devDependencies": {
     "aegir": "^37.5.2"
