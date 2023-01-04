@@ -157,7 +157,8 @@ export function validate (node) {
     Data optional Bytes
   }
   */
-  if (!node || typeof node !== 'object' || Array.isArray(node)) {
+  // @ts-ignore private property for TS
+  if (!node || typeof node !== 'object' || Array.isArray(node) || node instanceof Uint8Array || (node['/'] && node['/'] === node.bytes)) {
     throw new TypeError('Invalid DAG-PB form')
   }
 
@@ -166,29 +167,30 @@ export function validate (node) {
   }
 
   if (node.Data !== undefined && !(node.Data instanceof Uint8Array)) {
-    throw new TypeError('Invalid DAG-PB form (Data must be a Uint8Array)')
+    throw new TypeError('Invalid DAG-PB form (Data must be bytes)')
   }
 
   if (!Array.isArray(node.Links)) {
-    throw new TypeError('Invalid DAG-PB form (Links must be an array)')
+    throw new TypeError('Invalid DAG-PB form (Links must be a list)')
   }
 
   for (let i = 0; i < node.Links.length; i++) {
     const link = node.Links[i]
-    if (!link || typeof link !== 'object' || Array.isArray(link)) {
-      throw new TypeError('Invalid DAG-PB form (bad link object)')
+    // @ts-ignore private property for TS
+    if (!link || typeof link !== 'object' || Array.isArray(link) || link instanceof Uint8Array || (link['/'] && link['/'] === link.bytes)) {
+      throw new TypeError('Invalid DAG-PB form (bad link)')
     }
 
     if (!hasOnlyProperties(link, pbLinkProperties)) {
-      throw new TypeError('Invalid DAG-PB form (extraneous properties on link object)')
+      throw new TypeError('Invalid DAG-PB form (extraneous properties on link)')
     }
 
-    if (!link.Hash) {
+    if (link.Hash === undefined) {
       throw new TypeError('Invalid DAG-PB form (link must have a Hash)')
     }
 
     // @ts-ignore private property for TS
-    if (link.Hash.asCID !== link.Hash) {
+    if (link.Hash == null || !link.Hash['/'] || link.Hash['/'] !== link.Hash.bytes) {
       throw new TypeError('Invalid DAG-PB form (link Hash must be a CID)')
     }
 
@@ -196,8 +198,13 @@ export function validate (node) {
       throw new TypeError('Invalid DAG-PB form (link Name must be a string)')
     }
 
-    if (link.Tsize !== undefined && (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0)) {
-      throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
+    if (link.Tsize !== undefined) {
+      if (typeof link.Tsize !== 'number' || link.Tsize % 1 !== 0) {
+        throw new TypeError('Invalid DAG-PB form (link Tsize must be an integer)')
+      }
+      if (link.Tsize < 0) {
+        throw new TypeError('Invalid DAG-PB form (link Tsize cannot be negative)')
+      }
     }
 
     if (i > 0 && linkComparator(link, node.Links[i - 1]) === -1) {
