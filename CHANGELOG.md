@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/ipld/js-dag-pb/compare/v3.0.2...v4.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* improve consistency and fidelity of error conditions & messages
+
+### Bug Fixes
+
+* improve consistency and fidelity of error conditions & messages ([bbbff4a](https://github.com/ipld/js-dag-pb/commit/bbbff4ab7b8924b3144a93980da8f1edae2ce421))
+
 ## [3.0.2](https://github.com/ipld/js-dag-pb/compare/v3.0.1...v3.0.2) (2023-01-03)
 
 
