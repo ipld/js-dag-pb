@@ -159,7 +159,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:electron-main": "aegir test -t electron-main",
-    "dep-check": "aegir dep-check"
+    "dep-check": "aegir dep-check -i @ipld/dag-pb"
   },
   "dependencies": {
     "multiformats": "^11.0.0"
