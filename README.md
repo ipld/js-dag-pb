@@ -1,18 +1,20 @@
 # @ipld/dag-pb <!-- omit in toc -->
 
 [![codecov](https://img.shields.io/codecov/c/github/ipld/js-dag-pb.svg?style=flat-square)](https://codecov.io/gh/ipld/js-dag-pb)
-[![CI](https://img.shields.io/github/workflow/status/ipld/js-dag-pb/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/ipld/js-dag-pb/actions/workflows/js-test-and-release.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipld/js-dag-pb/js-test-and-release.yml?branch=master\&style=flat-square)](https://github.com/ipld/js-dag-pb/actions/workflows/js-test-and-release.yml?query=branch%3Amaster)
 
 > JS implementation of DAG-PB
 
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
 - [Overview](#overview)
 - [Example](#example)
 - [Usage](#usage)
   - [`prepare()`](#prepare)
-- [`createNode()` & `createLink()`](#createnode--createlink)
+- [`createNode()` \& `createLink()`](#createnode--createlink)
+- [API Docs](#api-docs)
 - [License](#license)
 - [Contribute](#contribute)
 
@@ -20,6 +22,14 @@
 
 ```console
 $ npm i @ipld/dag-pb
+```
+
+### Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `IpldDagPb` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@ipld/dag-pb/dist/index.min.js"></script>
 ```
 
 ## Overview
@@ -123,6 +133,7 @@ run().catch((err) => console.error(err))
 
 Results in:
 
+```
     {
       Data: Uint8Array(5) [ 0, 1, 2, 3, 4 ],
       Links: [
@@ -142,6 +153,11 @@ Results in:
     Encoded: 122d0a2212207521fe19c374a97759226dc5c0c8e674e73950e81b211f7dd3b6b30883a08a511205
              6c696e6b31186412300a2401711220a47a29adb950ee698ae0f272019ae902b6aa06ee5f53bc3da2
              ebea6fac27583d12056c696e6b3218c8010a050001020304
+```
+
+## API Docs
+
+- <https://ipld.github.io/js-dag-pb>
 
 ## License
 

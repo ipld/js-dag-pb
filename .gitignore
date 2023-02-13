@@ -3,3 +3,4 @@ dist/
 coverage/
 .coverage/
 package-lock.json
+.docs

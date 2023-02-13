@@ -148,6 +148,7 @@
   },
   "scripts": {
     "clean": "aegir clean",
+    "docs": "aegir docs",
     "lint": "aegir lint",
     "build": "aegir build",
     "release": "aegir release",
