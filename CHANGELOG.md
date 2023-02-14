@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/ipld/js-dag-pb/compare/v4.0.1...v4.0.2) (2023-02-14)
+
+
+### Documentation
+
+* publish tsdocs for this module ([#75](https://github.com/ipld/js-dag-pb/issues/75)) ([69176a2](https://github.com/ipld/js-dag-pb/commit/69176a2887b1a337dfd30e734fc8445c928ec615))
+
 ## [4.0.1](https://github.com/ipld/js-dag-pb/compare/v4.0.0...v4.0.1) (2023-02-13)
 
 
