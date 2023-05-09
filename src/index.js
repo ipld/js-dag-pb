@@ -9,8 +9,8 @@ import { prepare, validate, createNode, createLink } from './util.js'
  */
 
 /**
- * @typedef {import('./interface').PBLink} PBLink
- * @typedef {import('./interface').PBNode} PBNode
+ * @typedef {import('./interface.js').PBLink} PBLink
+ * @typedef {import('./interface.js').PBNode} PBNode
  */
 
 export const name = 'dag-pb'

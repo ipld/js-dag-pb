@@ -1,8 +1,8 @@
 import { CID } from 'multiformats/cid'
 
 /**
- * @typedef {import('./interface').PBLink} PBLink
- * @typedef {import('./interface').PBNode} PBNode
+ * @typedef {import('./interface.js').PBLink} PBLink
+ * @typedef {import('./interface.js').PBNode} PBNode
  */
 
 const pbNodeProperties = ['Data', 'Links']
