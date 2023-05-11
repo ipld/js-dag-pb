@@ -1,3 +1,15 @@
+## [4.0.3](https://github.com/ipld/js-dag-pb/compare/v4.0.2...v4.0.3) (2023-05-11)
+
+
+### Bug Fixes
+
+* update import paths to include extension ([#82](https://github.com/ipld/js-dag-pb/issues/82)) ([9fe97e3](https://github.com/ipld/js-dag-pb/commit/9fe97e3d0bd8c4628b7111f6e2931def88f69366))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#81](https://github.com/ipld/js-dag-pb/issues/81)) ([e2de671](https://github.com/ipld/js-dag-pb/commit/e2de671bb545be0a0d8be01f7f18b33182f4f70d))
+
 ## [4.0.2](https://github.com/ipld/js-dag-pb/compare/v4.0.1...v4.0.2) (2023-02-14)
 
 
