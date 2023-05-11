@@ -6,8 +6,8 @@ import { assert } from 'aegir/chai'
 import { bytes } from 'multiformats'
 import { CID } from 'multiformats/cid'
 import { encode, decode } from '../src/index.js'
-import { encodeNode } from '../src/pb-encode.js'
 import { decodeNode } from '../src/pb-decode.js'
+import { encodeNode } from '../src/pb-encode.js'
 
 // Hash is raw+identity 0x0001020304 CID(bafkqabiaaebagba)
 const acid = CID.decode(Uint8Array.from([1, 85, 0, 5, 0, 1, 2, 3, 4]))
