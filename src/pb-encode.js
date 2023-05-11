@@ -3,11 +3,11 @@ const maxInt32 = 2 ** 32
 const maxUInt32 = 2 ** 31
 
 /**
- * @typedef {import('./interface').RawPBLink} RawPBLink
+ * @typedef {import('./interface.js').RawPBLink} RawPBLink
  */
 
 /**
- * @typedef {import('./interface').RawPBNode} RawPBNode
+ * @typedef {import('./interface.js').RawPBNode} RawPBNode
  */
 
 // the encoders work backward from the end of the bytes array

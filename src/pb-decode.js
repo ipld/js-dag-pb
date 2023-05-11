@@ -1,11 +1,11 @@
 const textDecoder = new TextDecoder()
 
 /**
- * @typedef {import('./interface').RawPBLink} RawPBLink
+ * @typedef {import('./interface.js').RawPBLink} RawPBLink
  */
 
 /**
- * @typedef {import('./interface').RawPBNode} RawPBNode
+ * @typedef {import('./interface.js').RawPBNode} RawPBNode
  */
 
 /**
