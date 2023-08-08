@@ -142,10 +142,10 @@ export function decodeNode (bytes) {
   const l = bytes.length
   let index = 0
   /** @type {RawPBLink[]|void} */
-  let links
+  let links = undefined // eslint-disable-line no-undef-init
   let linksBeforeData = false
   /** @type {Uint8Array|void} */
-  let data
+  let data = undefined // eslint-disable-line no-undef-init
 
   while (index < l) {
     let wireType, fieldNum
