@@ -1,3 +1,15 @@
+## [4.0.5](https://github.com/ipld/js-dag-pb/compare/v4.0.4...v4.0.5) (2023-08-08)
+
+
+### Bug Fixes
+
+* address new typescript linting error ([9e3f768](https://github.com/ipld/js-dag-pb/commit/9e3f7685000dfeb03e8ff01507eccffa6c322d6a))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.8 ([3ec2876](https://github.com/ipld/js-dag-pb/commit/3ec2876a923ce9f952efb842ea658105fa320dc7))
+
 ## [4.0.4](https://github.com/ipld/js-dag-pb/compare/v4.0.3...v4.0.4) (2023-06-19)
 
 
