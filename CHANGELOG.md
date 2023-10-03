@@ -1,3 +1,16 @@
+## [4.0.6](https://github.com/ipld/js-dag-pb/compare/v4.0.5...v4.0.6) (2023-10-03)
+
+
+### Trivial Changes
+
+* add or force update .github/workflows/js-test-and-release.yml ([0041dec](https://github.com/ipld/js-dag-pb/commit/0041dec6884c574b1b1e2f67716c4ee228f28d2f))
+* delete templates [skip ci] ([#89](https://github.com/ipld/js-dag-pb/issues/89)) ([d171c19](https://github.com/ipld/js-dag-pb/commit/d171c1958f4bac5aed8b938c9e3870a84e38cb2c))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([66b0fc1](https://github.com/ipld/js-dag-pb/commit/66b0fc1f0f158d3bbbca51040c36da4a51031063))
+
 ## [4.0.5](https://github.com/ipld/js-dag-pb/compare/v4.0.4...v4.0.5) (2023-08-08)
 
 
