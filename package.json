@@ -1,6 +1,6 @@
 {
   "name": "@ipld/dag-pb",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "JS implementation of DAG-PB",
   "author": "Rod <rod@vagg.org> (http://r.va.gg/)",
   "license": "Apache-2.0 OR MIT",
