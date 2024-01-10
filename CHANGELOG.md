@@ -1,3 +1,10 @@
+## [4.0.8](https://github.com/ipld/js-dag-pb/compare/v4.0.7...v4.0.8) (2024-01-10)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 41.3.5 to 42.1.0 ([63242a2](https://github.com/ipld/js-dag-pb/commit/63242a2ef309a2b88297c37ba47d2909d603674b))
+
 ## [4.0.7](https://github.com/ipld/js-dag-pb/compare/v4.0.6...v4.0.7) (2023-12-28)
 
 
