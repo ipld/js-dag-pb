@@ -1,11 +1,16 @@
 import { CID } from 'multiformats/cid'
 import { decodeNode } from './pb-decode.js'
 import { encodeNode } from './pb-encode.js'
-import { prepare, validate, createNode, createLink } from './util.js'
+import { prepare, validate, createNode, createLink, toByteView } from './util.js'
 
 /**
  * @template T
  * @typedef {import('multiformats/codecs/interface').ByteView<T>} ByteView
+ */
+
+/**
+ * @template T
+ * @typedef {import('multiformats/codecs/interface').ArrayBufferView<T>} ArrayBufferView
  */
 
 /**
@@ -47,11 +52,12 @@ export function encode (node) {
 }
 
 /**
- * @param {ByteView<PBNode>} bytes
+ * @param {ByteView<PBNode> | ArrayBufferView<PBNode>} bytes
  * @returns {PBNode}
  */
 export function decode (bytes) {
-  const pbn = decodeNode(bytes)
+  const buf = toByteView(bytes)
+  const pbn = decodeNode(buf)
 
   const node = {}
 

@@ -163,7 +163,7 @@
     "dep-check": "aegir dep-check -i @ipld/dag-pb"
   },
   "dependencies": {
-    "multiformats": "^13.0.0"
+    "multiformats": "^13.1.0"
   },
   "devDependencies": {
     "aegir": "^42.1.0"
