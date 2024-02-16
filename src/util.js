@@ -5,6 +5,16 @@ import { CID } from 'multiformats/cid'
  * @typedef {import('./interface.js').PBNode} PBNode
  */
 
+/**
+ * @template T
+ * @typedef {import('multiformats/codecs/interface').ByteView<T>} ByteView
+ */
+
+/**
+ * @template T
+ * @typedef {import('multiformats/codecs/interface').ArrayBufferView<T>} ArrayBufferView
+ */
+
 const pbNodeProperties = ['Data', 'Links']
 const pbLinkProperties = ['Hash', 'Name', 'Tsize']
 
@@ -230,4 +240,17 @@ export function createNode (data, links = []) {
  */
 export function createLink (name, size, cid) {
   return asLink({ Hash: cid, Name: name, Tsize: size })
+}
+
+/**
+ * @template T
+ * @param {ByteView<T> | ArrayBufferView<T>} buf
+ * @returns {ByteView<T>}
+ */
+export function toByteView (buf) {
+  if (buf instanceof ArrayBuffer) {
+    return new Uint8Array(buf, 0, buf.byteLength)
+  }
+
+  return buf
 }

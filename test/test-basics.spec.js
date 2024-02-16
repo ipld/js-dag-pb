@@ -44,6 +44,17 @@ describe('Basics', () => {
     assert.deepEqual(node.Data, data)
   })
 
+  it('prepare & encode a node with data using an ArrayBuffer', () => {
+    const data = Uint8Array.from([0, 1, 2, 3, 4])
+    const prepared = prepare({ Data: data })
+    assert.deepEqual(prepared, { Data: data, Links: [] })
+    const result = encode(prepared)
+    assert.instanceOf(result, Uint8Array)
+
+    const node = decode(result.buffer)
+    assert.deepEqual(node.Data, data)
+  })
+
   it('prepare & encode a node with links', () => {
     const links = [
       { Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe') }
