@@ -1,3 +1,10 @@
+## [4.1.0](https://github.com/ipld/js-dag-pb/compare/v4.0.8...v4.1.0) (2024-02-16)
+
+
+### Features
+
+* support decoding ArrayBuffers ([#95](https://github.com/ipld/js-dag-pb/issues/95)) ([3d4eaf8](https://github.com/ipld/js-dag-pb/commit/3d4eaf8995ec4fef1899da62e7025d5fe5eaecbc))
+
 ## [4.0.8](https://github.com/ipld/js-dag-pb/compare/v4.0.7...v4.0.8) (2024-01-10)
 
 
