@@ -491,7 +491,7 @@ describe('create*() utility functions', () => {
     // but that's not really what this API is for ...
   })
 
-  it('createNode() errors', () => {
+  it('createLink() errors', () => {
     const invalids = [
       undefined,
       null,
