@@ -257,7 +257,7 @@ describe('Compatibility', () => {
     })
   })
 
-  it('Links Name some', () => {
+  it('Links Tsize some', () => {
     const testCase = {
       node: { Links: [{ Tsize: 1010 }] },
       expectedBytes: '120318f207',
