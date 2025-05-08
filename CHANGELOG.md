@@ -1,3 +1,14 @@
+## [4.1.4](https://github.com/ipld/js-dag-pb/compare/v4.1.3...v4.1.4) (2025-05-08)
+
+### Trivial Changes
+
+* **test:** correctly name compatibility test case ([#102](https://github.com/ipld/js-dag-pb/issues/102)) ([af3a132](https://github.com/ipld/js-dag-pb/commit/af3a132075233728ec24d266918d32db64359812))
+* **test:** fix wrongly named test case ([#101](https://github.com/ipld/js-dag-pb/issues/101)) ([345439f](https://github.com/ipld/js-dag-pb/commit/345439fca0001a6e2252cd949924152d0841cd6c))
+
+### Dependencies
+
+* **dev:** bump aegir from 45.2.1 to 46.0.0 ([#104](https://github.com/ipld/js-dag-pb/issues/104)) ([7b80582](https://github.com/ipld/js-dag-pb/commit/7b805822daeb4a102d63ea546a2d77ae7560638d))
+
 ## [4.1.3](https://github.com/ipld/js-dag-pb/compare/v4.1.2...v4.1.3) (2024-10-29)
 
 ### Dependencies
