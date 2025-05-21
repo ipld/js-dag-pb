@@ -1,5 +1,7 @@
 import { CID } from 'multiformats/cid'
 
+/* eslint-disable complexity, no-nested-ternary */
+
 /**
  * @typedef {import('./interface.js').PBLink} PBLink
  * @typedef {import('./interface.js').PBNode} PBNode
@@ -225,7 +227,7 @@ export function validate (node) {
 
 /**
  * @param {Uint8Array} data
- * @param {PBLink[]} [links=[]]
+ * @param {PBLink[]} [links]
  * @returns {PBNode}
  */
 export function createNode (data, links = []) {

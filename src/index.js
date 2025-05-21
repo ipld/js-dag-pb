@@ -70,7 +70,9 @@ export function decode (bytes) {
       const link = {}
       try {
         link.Hash = CID.decode(l.Hash)
-      } catch (e) {}
+      } catch {
+        // ignore parse fail
+      }
       if (!link.Hash) {
         throw new Error('Invalid Hash field found in link, expected CID')
       }
