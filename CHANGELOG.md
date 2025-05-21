@@ -1,3 +1,14 @@
+## [4.1.5](https://github.com/ipld/js-dag-pb/compare/v4.1.4...v4.1.5) (2025-05-21)
+
+### Trivial Changes
+
+* don't commit package-lock.json ([b66416a](https://github.com/ipld/js-dag-pb/commit/b66416a5b2a2398c4e412021b1b9fc0818d6c406))
+* remove package-lock.json ([d6aa27c](https://github.com/ipld/js-dag-pb/commit/d6aa27cc1606e3c98cf7e708635bdebe9f73e81c))
+
+### Dependencies
+
+* **dev:** bump aegir from 46.0.5 to 47.0.6 ([#106](https://github.com/ipld/js-dag-pb/issues/106)) ([8e3e8bb](https://github.com/ipld/js-dag-pb/commit/8e3e8bb222b9ac87d1abc61d26fdc446c93d1e64))
+
 ## [4.1.4](https://github.com/ipld/js-dag-pb/compare/v4.1.3...v4.1.4) (2025-05-08)
 
 ### Trivial Changes
