@@ -18,6 +18,7 @@ describe('Edge cases', () => {
         // @ts-ignore RawPBLink needs Name but we don't have one
         encodeNode(form))
       , expected)
+    // @ts-expect-error
     assert.deepEqual(decodeNode(bytes.fromHex(expected)), form)
 
     form = { Links: [{ Hash: acidBytes, Tsize: Number.MAX_SAFE_INTEGER }] }
@@ -27,6 +28,7 @@ describe('Edge cases', () => {
         // @ts-ignore RawPBLink needs Name but we don't have one
         encodeNode(form))
       , expected)
+    // @ts-expect-error
     assert.deepEqual(decodeNode(bytes.fromHex(expected)), form)
 
     // too big, we can decode but not encode, it's a tiny bit too hard to bother
@@ -36,6 +38,7 @@ describe('Edge cases', () => {
       // @ts-ignore RawPBLink needs Name but we don't have one
       encodeNode(form)
     }, /too large/)
+    // @ts-expect-error
     assert.deepEqual(decodeNode(bytes.fromHex(expected)), form)
   })
 
