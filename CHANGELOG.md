@@ -1,3 +1,9 @@
+## [4.1.6](https://github.com/ipld/js-dag-pb/compare/v4.1.5...v4.1.6) (2026-05-07)
+
+### Dependencies
+
+* **dev:** bump aegir from 47.2.0 to 48.0.1 ([#108](https://github.com/ipld/js-dag-pb/issues/108)) ([d573d19](https://github.com/ipld/js-dag-pb/commit/d573d1935f5a0928d67959f13d5a8e9c486b6bdf))
+
 ## [4.1.5](https://github.com/ipld/js-dag-pb/compare/v4.1.4...v4.1.5) (2025-05-21)
 
 ### Trivial Changes
