@@ -1,3 +1,9 @@
+## [4.1.7](https://github.com/ipld/js-dag-pb/compare/v4.1.6...v4.1.7) (2026-05-11)
+
+### Dependencies
+
+* bump multiformats from 13.4.2 to 14.0.0 ([#109](https://github.com/ipld/js-dag-pb/issues/109)) ([81887a9](https://github.com/ipld/js-dag-pb/commit/81887a9638a5bc596331d7badb9e68e04ad1c4b6))
+
 ## [4.1.6](https://github.com/ipld/js-dag-pb/compare/v4.1.5...v4.1.6) (2026-05-07)
 
 ### Dependencies
