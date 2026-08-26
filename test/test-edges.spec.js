@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { assert } from 'aegir/chai'
 import { bytes } from 'multiformats'
 import { decodeNode } from '../src/pb-decode.js'
