@@ -85,6 +85,32 @@ describe('Basics', () => {
     assert.containSubset(linkCidsToStrings(node.Links), linkCidsToStrings(links))
   })
 
+  it('encode a node with links, data first', () => {
+    const dataBytes = '0a050001020304'
+    const linksBytes = '122f0a2212207521fe19c374a97759226dc5c0c8e674e73950e81b211f7dd3b6b30883a08a51120968656c6c6f2e747874'
+
+    const node = {
+      Data: Uint8Array.from([0, 1, 2, 3, 4]),
+      Links: [{
+        Name: 'hello.txt', Hash: CID.parse('QmWDtUQj38YLW8v3q4A6LwPn4vYKEbuKWpgSm6bjKW6Xfe')
+      }]
+    }
+    const defaultResult = encode(node)
+    const expectedDefaultBytes = `${linksBytes}${dataBytes}`
+    assert.instanceOf(defaultResult, Uint8Array)
+    assert.deepEqual(bytes.toHex(defaultResult), expectedDefaultBytes)
+
+    const dataFirstResult = encode(node, {
+      dataFirst: true
+    })
+    const expectedDataFirstBytes = `${dataBytes}${linksBytes}`
+    assert.instanceOf(dataFirstResult, Uint8Array)
+    assert.deepEqual(bytes.toHex(dataFirstResult), expectedDataFirstBytes)
+
+    assert.deepEqual(decode(defaultResult), node)
+    assert.deepEqual(decode(dataFirstResult), node)
+  })
+
   it('ignore invalid properties when preparing', () => {
     const prepared = prepare({ foo: 'bar' })
     assert.deepEqual(prepared, { Links: [] })

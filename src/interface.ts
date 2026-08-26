@@ -31,3 +31,13 @@ export interface RawPBNode {
   Data: Uint8Array
   Links: RawPBLink[]
 }
+
+export interface EncodeOptions {
+  /**
+   * By default the `Data` field in a `PBNode` message is encoded after all
+   * repeated `Links` elements.
+   *
+   * Pass `true` here to encode the `Data` field before any `Links`.
+   */
+  dataFirst?: boolean
+}
