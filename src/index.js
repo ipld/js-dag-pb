@@ -16,6 +16,7 @@ import { prepare, validate, createNode, createLink, toByteView } from './util.js
 /**
  * @typedef {import('./interface.js').PBLink} PBLink
  * @typedef {import('./interface.js').PBNode} PBNode
+ * @typedef {import('./interface.js').FieldOrder} FieldOrder
  * @typedef {import('./interface.js').EncodeOptions} EncodeOptions
  */
 
