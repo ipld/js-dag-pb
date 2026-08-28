@@ -101,7 +101,7 @@ describe('Basics', () => {
     assert.deepEqual(bytes.toHex(defaultResult), expectedDefaultBytes)
 
     const dataFirstResult = encode(node, {
-      dataFirst: true
+      fieldOrder: 'data-first'
     })
     const expectedDataFirstBytes = `${dataBytes}${linksBytes}`
     assert.instanceOf(dataFirstResult, Uint8Array)

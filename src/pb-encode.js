@@ -82,8 +82,9 @@ export function encodeNode (node, options) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
   let i = size
+  const fieldOrder = options?.fieldOrder === 'data-first' ? options.fieldOrder : 'links-first'
 
-  if (node.Data && options?.dataFirst !== true) {
+  if (node.Data && fieldOrder === 'links-first') {
     i = encodeData(i, node, bytes)
   }
 
@@ -96,7 +97,7 @@ export function encodeNode (node, options) {
     }
   }
 
-  if (node.Data && options?.dataFirst === true) {
+  if (node.Data && fieldOrder === 'data-first') {
     i = encodeData(i, node, bytes)
   }
 

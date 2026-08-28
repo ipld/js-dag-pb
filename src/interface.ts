@@ -32,12 +32,17 @@ export interface RawPBNode {
   Links: RawPBLink[]
 }
 
+export type FieldOrder = 'links-first' | 'data-first'
+
 export interface EncodeOptions {
   /**
    * By default the `Data` field in a `PBNode` message is encoded after all
    * repeated `Links` elements.
    *
-   * Pass `true` here to encode the `Data` field before any `Links`.
+   * Pass `data-first` here to encode the `Data` field before any `Links`.
+   *
+   * @see https://github.com/ipfs/specs/pull/550
+   * @default 'links-first'
    */
-  dataFirst?: boolean
+  fieldOrder?: FieldOrder
 }
