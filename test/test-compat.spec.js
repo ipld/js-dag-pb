@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 // tests mirrored in go-merkledag/pb/compat_test.go
 
 import { assert } from 'aegir/chai'

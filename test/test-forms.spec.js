@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { assert } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { encode, validate } from '../src/index.js'
