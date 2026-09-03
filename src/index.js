@@ -16,6 +16,8 @@ import { prepare, validate, createNode, createLink, toByteView } from './util.js
 /**
  * @typedef {import('./interface.js').PBLink} PBLink
  * @typedef {import('./interface.js').PBNode} PBNode
+ * @typedef {import('./interface.js').FieldOrder} FieldOrder
+ * @typedef {import('./interface.js').EncodeOptions} EncodeOptions
  */
 
 export const name = 'dag-pb'
@@ -23,9 +25,10 @@ export const code = 0x70
 
 /**
  * @param {PBNode} node
+ * @param {EncodeOptions} [options]
  * @returns {ByteView<PBNode>}
  */
-export function encode (node) {
+export function encode (node, options) {
   validate(node)
 
   const pbn = {}
@@ -48,7 +51,7 @@ export function encode (node) {
     pbn.Data = node.Data
   }
 
-  return encodeNode(pbn)
+  return encodeNode(pbn, options)
 }
 
 /**

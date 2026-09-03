@@ -10,6 +10,10 @@ const maxUInt32 = 2 ** 31
  * @typedef {import('./interface.js').RawPBNode} RawPBNode
  */
 
+/**
+ * @typedef {import('./interface.js').EncodeOptions} EncodeOptions
+ */
+
 // the encoders work backward from the end of the bytes array
 
 /**
@@ -53,21 +57,35 @@ function encodeLink (link, bytes) {
 }
 
 /**
+ * @param {number} i
+ * @param {RawPBNode} node
+ * @param {Uint8Array} bytes
+ * @returns number
+ */
+function encodeData (i, node, bytes) {
+  i -= node.Data.length
+  bytes.set(node.Data, i)
+  i = encodeVarint(bytes, i, node.Data.length) - 1
+  bytes[i] = 0xa
+
+  return i
+}
+
+/**
  * Encodes a PBNode into a new byte array of precisely the correct size
  *
  * @param {RawPBNode} node
+ * @param {EncodeOptions} [options]
  * @returns {Uint8Array}
  */
-export function encodeNode (node) {
+export function encodeNode (node, options) {
   const size = sizeNode(node)
   const bytes = new Uint8Array(size)
   let i = size
+  const fieldOrder = options?.fieldOrder === 'data-first' ? options.fieldOrder : 'links-first'
 
-  if (node.Data) {
-    i -= node.Data.length
-    bytes.set(node.Data, i)
-    i = encodeVarint(bytes, i, node.Data.length) - 1
-    bytes[i] = 0xa
+  if (node.Data && fieldOrder === 'links-first') {
+    i = encodeData(i, node, bytes)
   }
 
   if (node.Links) {
@@ -77,6 +95,10 @@ export function encodeNode (node) {
       i = encodeVarint(bytes, i, size) - 1
       bytes[i] = 0x12
     }
+  }
+
+  if (node.Data && fieldOrder === 'data-first') {
+    i = encodeData(i, node, bytes)
   }
 
   return bytes
