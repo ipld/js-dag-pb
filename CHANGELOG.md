@@ -1,3 +1,13 @@
+## [4.2.0](https://github.com/ipld/js-dag-pb/compare/v4.1.7...v4.2.0) (2026-09-03)
+
+### Features
+
+* allow encoding Data fields before Links in PBNode messages ([#111](https://github.com/ipld/js-dag-pb/issues/111)) ([07ffbd2](https://github.com/ipld/js-dag-pb/commit/07ffbd2bcdeb1637902e9ba3964dee7c99ca71e2))
+
+### Trivial Changes
+
+* remove eslint-env comments ([#110](https://github.com/ipld/js-dag-pb/issues/110)) ([e77f2c6](https://github.com/ipld/js-dag-pb/commit/e77f2c65ae0ec0291392b34916209770df18611b))
+
 ## [4.1.7](https://github.com/ipld/js-dag-pb/compare/v4.1.6...v4.1.7) (2026-05-11)
 
 ### Dependencies
